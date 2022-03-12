@@ -64,7 +64,7 @@ def get_files_dsa(args):
             # Append the month to the list
             month_list.append(month)
             # Append the url to the list
-            url_list.append(url + channel + year + month + '/' + file)
+            url_list.append(url + channel + year + month + file)
             # Append channel to the list
             channel_list.append(channel)
 

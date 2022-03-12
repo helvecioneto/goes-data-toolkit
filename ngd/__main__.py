@@ -39,7 +39,7 @@ def main():
     # Add parameters
     # Start date
     parser.add_argument(
-        "-start",
+        "-s",
         type=str,
         metavar='',
         help="Start date in format YYYY-MM-DD hh:mm",
@@ -47,7 +47,7 @@ def main():
     )
     # End date
     parser.add_argument(
-        "-end",
+        "-e",
         type=str,
         metavar='',
         help="End date in format YYYY-MM-DD hh:mm",
@@ -56,7 +56,7 @@ def main():
 
     # Interval
     parser.add_argument(
-        "-interval",
+        "-i",
         type=str,
         metavar='',
         help="Interval in format. Ex: 30min, 1h, 1d, 1w, 1m, 1y",
@@ -66,17 +66,17 @@ def main():
 
     # Ignore times between midnight and 6am
     parser.add_argument(
-        "-ignore_times",
+        "-bt",
         type=str,
         metavar='',
-        help="Ignore times between: Ex: Ignore between 8pm and 6am -> 20:00,06:00",
+        help="Between times Ex:> 20:00,06:00",
         default="None",
         required=False,
     )
 
     # Satellite
     parser.add_argument(
-        "-provider",
+        "-p",
         type=str,
         metavar='',
         help="NOAA or DSA(INPE)",
@@ -94,7 +94,7 @@ def main():
 
     # Sensor
     parser.add_argument(
-        "-sensor",
+        "-c",
         type=str,
         metavar='',
         help="Sensor name or channel",
