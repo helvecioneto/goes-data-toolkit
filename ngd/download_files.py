@@ -1,8 +1,10 @@
 import os
 import pandas as pd
 from pytimeparse.timeparse import timeparse
-
 from check_error import check_errors
+
+import warnings
+warnings.filterwarnings("ignore")
 
 
 def download():
@@ -23,6 +25,7 @@ def download():
     interval = timeparse(os.getenv('i'))
     between_times = list(map(str, os.getenv("bt").split(",")))
     channel = os.getenv('c')
+    output = os.getenv('o')
 
     # lock parameters in guid_df
     guide_df = guide_df[(guide_df['sat'] == sat) & (guide_df['provider'] == provider)]
@@ -43,5 +46,18 @@ def download():
 
         # Lock by between_times at index of guide_df
         guide_df = guide_df.between_time(between_times[0], between_times[1])
+
+    # Check if output dir exist
+    if not os.path.exists(output):
+        os.makedirs(output)
+
+    # Download
+    for i, row in guide_df.iterrows():
+        # Check if url is not none
+        if row['url'] is not None:
+            # Check provider
+            if provider == 'DSA':
+                print('\n\nDownloading file: ', row['url'])
+                os.system('wget -cO - ' + row['url'] + ' > ' + output + i.strftime('/%Y%m%d_%H%M%S.gz'))
 
     print(guide_df)

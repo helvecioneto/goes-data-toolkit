@@ -122,7 +122,7 @@ def main():
 
     # Output path
     parser.add_argument(
-        "-output",
+        "-o",
         type=str,
         metavar='',
         help="Output Directory",
