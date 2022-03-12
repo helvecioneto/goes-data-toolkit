@@ -140,7 +140,7 @@ def get_noaa_files(args):
             # Append the month to the list
             month_list.append(month)
             # Append the url to the list
-            url_list.append(url + year + month + '/' + file_)
+            url_list.append(url + year + '/' + month + '/' + file_)
 
     # Create a dataframe
     output_df['year'] = year_list

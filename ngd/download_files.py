@@ -59,5 +59,9 @@ def download():
             if provider == 'DSA':
                 print('\n\nDownloading file: ', row['url'])
                 os.system('wget -cO - ' + row['url'] + ' > ' + output + i.strftime('/%Y%m%d_%H%M%S.gz'))
+            # Check provider
+            if provider == 'NOAA':
+                print('\n\nDownloading file: ', row['url'])
+                os.system('wget -cO - ' + row['url'] + ' > ' + output + i.strftime('/%Y%m%d_%H%M%S.nc'))
 
     print(guide_df)
