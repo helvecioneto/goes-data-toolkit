@@ -54,6 +54,8 @@ def download_file(args):
                 attempts = 6
             except:
                 attempts += 1
+                # Write in logfile
+                print('\nError downloading file: ', timestamp, '\nFrom :', url)
                 return 0
 
     # Begin processing

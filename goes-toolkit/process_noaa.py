@@ -9,7 +9,6 @@ def process_noaa(temp_dir, output, timestamp):
     """Process NOAA files"""
 
     try:
-
         print('\nProcessing NOAA file: ', timestamp)
 
         #  Parameters

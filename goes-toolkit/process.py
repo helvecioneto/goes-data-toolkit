@@ -68,4 +68,4 @@ def process_files():
             if flag == 0:
                 logging.info(f'Error downloading file: {filtered_df.iloc[idx + i]["timestamp"]}')
             elif flag == 1:
-                logging.info(f'Process failed file: {filtered_df.iloc[idx + i]["timestamp"]}')
+                logging.info(f'Downloaded file: {filtered_df.iloc[idx + i]["timestamp"]}')
