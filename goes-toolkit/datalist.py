@@ -1,5 +1,8 @@
 import pandas as pd
 import os
+import __init__
+
+from filter_data import filterdata
 
 
 def data_list():
@@ -7,15 +10,15 @@ def data_list():
     Get satellite list.
     """
     print('Reading guide data...')
-    guide_df = pd.read_pickle('ngd/file_guide.pkl', compression='gzip')
+    guide_df = filterdata()
 
     # Get parameters
     try:
-        start_date = pd.to_datetime(os.getenv('start')).strftime('%Y-%m-%d %H:%M:%S')
+        start_date = pd.to_datetime(os.getenv('s')).strftime('%Y-%m-%d %H:%M:%S')
     except:
         start_date = None
     try:
-        end_date = pd.to_datetime(os.getenv('end')).strftime('%Y-%m-%d %H:%M:%S')
+        end_date = pd.to_datetime(os.getenv('e')).strftime('%Y-%m-%d %H:%M:%S')
     except:
         end_date = None
 
@@ -25,7 +28,7 @@ def data_list():
 
     # Get sat list
     sats = os.getenv('sat')
-    provider = os.getenv('provider')
+    provider = os.getenv('p')
 
     # Check if sat is None
     if sats == 'None':

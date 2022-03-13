@@ -4,7 +4,7 @@ import os
 import sys
 
 from datalist import data_list
-from download_files import download
+from process import process_files
 
 
 def main():
@@ -34,7 +34,7 @@ def main():
 
     # Download
     parser_track = subparsers.add_parser("download", help="Download Mode")
-    parser_track.set_defaults(func=download)
+    parser_track.set_defaults(func=process_files)
 
     # Add parameters
     # Start date
@@ -60,7 +60,7 @@ def main():
         type=str,
         metavar='',
         help="Interval in format. Ex: 30min, 1h, 1d, 1w, 1m, 1y",
-        default="30min",
+        default="60min",
         required=False,
     )
 
@@ -80,6 +80,7 @@ def main():
         type=str,
         metavar='',
         help="NOAA or DSA(INPE)",
+        default="NOAA",
         required=False,
     )
 
@@ -107,6 +108,7 @@ def main():
         type=str,
         metavar='',
         help="Bounding box in format min_lon,min_lat,max_lon,max_lat",
+        default="-40.48,-9.48,-34.6,-5.52",
         required=False,
     )
 

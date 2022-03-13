@@ -2,7 +2,7 @@ import os
 import pandas as pd
 
 
-def check_errors():
+def checkerrors():
     try:
         pd.to_datetime(os.getenv('s'))
     except ValueError as e:

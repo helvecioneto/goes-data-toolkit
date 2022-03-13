@@ -1,21 +1,17 @@
+import pandas as pd
 import os
 import pandas as pd
 from pytimeparse.timeparse import timeparse
-from check_error import check_errors
-
-import warnings
-warnings.filterwarnings("ignore")
+import __init__
 
 
-def download():
-    """Download files from the server"""
-    print('Downloading files...')
-
-    # Call checkerror function
-    check_errors()
+def filterdata():
 
     # Read guide data
-    guide_df = pd.read_pickle('ngd/file_guide.pkl', compression='gzip')
+    guide_df = pd.read_pickle(__init__.__program_name__+'/file_guide.pkl', compression='gzip')
+
+    # Read guide data
+    guide_df = pd.read_pickle(__init__.__program_name__+'/file_guide.pkl', compression='gzip')
 
     # Set parameters
     start_date = pd.to_datetime(os.getenv('s')).strftime('%Y-%m-%d %H:%M:%S')
@@ -25,13 +21,12 @@ def download():
     interval = timeparse(os.getenv('i'))
     between_times = list(map(str, os.getenv("bt").split(",")))
     channel = os.getenv('c')
-    output = os.getenv('o')
 
     # lock parameters in guid_df
     guide_df = guide_df[(guide_df['sat'] == sat) & (guide_df['provider'] == provider)]
 
     # Check if provider is DSA to get channel from list
-    if provider == 'DSA':
+    if provider == 'DSA' and channel != 'None':
         guide_df = guide_df[(guide_df['channel'] == int(channel))]
 
     # Lock by start_date and end_date
@@ -47,21 +42,4 @@ def download():
         # Lock by between_times at index of guide_df
         guide_df = guide_df.between_time(between_times[0], between_times[1])
 
-    # Check if output dir exist
-    if not os.path.exists(output):
-        os.makedirs(output)
-
-    # Download
-    for i, row in guide_df.iterrows():
-        # Check if url is not none
-        if row['url'] is not None:
-            # Check provider
-            if provider == 'DSA':
-                print('\n\nDownloading file: ', row['url'])
-                os.system('wget -cO - ' + row['url'] + ' > ' + output + i.strftime('/%Y%m%d_%H%M%S.gz'))
-            # Check provider
-            if provider == 'NOAA':
-                print('\n\nDownloading file: ', row['url'])
-                os.system('wget -cO - ' + row['url'] + ' > ' + output + i.strftime('/%Y%m%d_%H%M%S.nc'))
-
-    print(guide_df)
+    return guide_df
