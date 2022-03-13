@@ -1,5 +1,6 @@
 import os
 import requests
+from process_noaa import process_noaa
 
 
 def download_file(args):
@@ -32,9 +33,7 @@ def download_file(args):
                 print('\nFile size is not same. Deleting file: ', temp_output)
                 os.remove(temp_output)
                 attempts += 1
-                failure = True
             else:
-                failure = False
                 attempts = 6
 
     # Check provider
@@ -49,17 +48,13 @@ def download_file(args):
 
         # Try download while file size is not equal to 0
         while attempts <= 5:
-            # Download file
-            os.system('wget --quiet --show-progress -cO - ' + url + ' > ' + temp_output)
-
-            # Check if file size is same
-            if os.path.getsize(temp_output) != int(size_of_file):
-                print('\nFile size is not same. Deleting file: ', temp_output)
-                os.remove(temp_output)
-                attempts += 1
-                failure = True
-            else:
+            try:
+                # Download file
+                os.system('wget --quiet --show-progress -cO - ' + url + ' > ' + temp_output)
                 attempts = 6
-                failure = False
+            except:
+                attempts += 1
+                return 0
 
-    return temp_output, failure, timestamp, output_path
+    # Begin processing
+    process_noaa(temp_output, output_path, timestamp)

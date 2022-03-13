@@ -5,16 +5,13 @@ from osgeo import gdal
 gdal.PushErrorHandler('CPLQuietErrorHandler')   # Ignore GDAL warnings
 
 
-def process_noaa(args):
-    # Process files
-
-    temp_dir, failure, timestamp, output = args
-
-    # Check failure
-    if failure:
-        return None
+def process_noaa(temp_dir, output, timestamp):
+    """Process NOAA files"""
 
     try:
+
+        print('\nProcessing NOAA file: ', timestamp)
+
         #  Parameters
         var_name = 'ch' + os.getenv('c')
         output_dir = output + '/' + var_name + '/' + timestamp.strftime('%Y') + \
@@ -185,7 +182,6 @@ def process_noaa(args):
 
         # Move file to output directory
         os.rename(temp_dir, output_dir + output_file)
-
-        return True, timestamp
     except:
-        return False, timestamp
+        print('Error: ' + timestamp)
+        return 1

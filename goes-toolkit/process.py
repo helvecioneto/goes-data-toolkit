@@ -1,6 +1,6 @@
 import os
 import logging
-from multiprocessing import Pool
+import multiprocessing
 from check_error import checkerrors
 from filter_data import filterdata
 from download_files import download_file
@@ -44,40 +44,28 @@ def process_files():
                         datefmt="%d-%b-%y %H:%M:%S",
                         level=logging.INFO)
 
-    # Multiple parallel download
-    parallel_downloads = 4
+    # Create a pool of processes
+    parallel_processes = multiprocessing.cpu_count() - 1
+    pool = multiprocessing.Pool(parallel_processes)
 
-    # Make the Pool of workers
-    pool = Pool(parallel_downloads)
-
-    # Download
-    for idx in range(0, len(filtered_df.index), parallel_downloads):
+    # Process files
+    for idx in range(0, len(filtered_df.index), parallel_processes):
 
         # for parallel download
         args = []
-        for i in range(parallel_downloads):
+        for i in range(parallel_processes):
             if idx + i < len(filtered_df.index):
                 args.append((filtered_df.iloc[idx + i]['url'],
                              filtered_df.iloc[idx + i]['provider'],
                              filtered_df.iloc[idx + i]['timestamp'],
                             output))
 
-        # and return the results
-        downloads_ = pool.map(download_file, args)
+        # Download files
+        flags = pool.map(download_file, args)
 
-        # Check if download is successful
-        for download in downloads_:
-            if download:
-                logging.info('Download failed for: ' + str(download))
-
-        # Process downloaded files
-        if provider == 'NOAA':
-            print('Processing files...')
-            procced_files = pool.map(process_noaa, downloads_)
-
-            for proc in procced_files:
-                if not proc[0]:
-                    logging.info('Processing failed for: ' + str(proc[1]))
-
-        if provider == 'DSA':
-            print('Processing files...')
+        # Check if flags are 0
+        for flag in flags:
+            if flag == 0:
+                logging.info(f'Error downloading file: {filtered_df.iloc[idx + i]["timestamp"]}')
+            elif flag == 1:
+                logging.info(f'Process failed file: {filtered_df.iloc[idx + i]["timestamp"]}')
