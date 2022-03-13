@@ -1,6 +1,7 @@
 import os
 import requests
 from process_noaa import process_noaa
+from process_dsa import process_dsa
 
 
 def download_file(args):
@@ -9,6 +10,9 @@ def download_file(args):
 
     # Print Download
     print(f'Downloading {provider} {timestamp}')
+
+    if url == None:
+        return
 
     # Get file size
     size_of_file = requests.head(url).headers['content-length']
@@ -25,16 +29,15 @@ def download_file(args):
 
         # Try download while file size is not equal to 0
         while attempts <= 5:
-            # Download file
-            os.system('wget --quiet --show-progress -cO - ' + url + ' > ' + temp_output)
-
-            # Check if file size is same
-            if os.path.getsize(temp_output) != int(size_of_file):
-                print('\nFile size is not same. Deleting file: ', temp_output)
-                os.remove(temp_output)
-                attempts += 1
-            else:
+            try:
+                # Download file
+                os.system('wget --quiet --show-progress -cO - ' + url + ' > ' + temp_output)
                 attempts = 6
+            except:
+                attempts += 1
+                # Write in logfile
+                print('\nError downloading file: ', timestamp, '\nFrom :', url)
+                return 0
 
     # Check provider
     if provider == 'NOAA':
@@ -58,5 +61,8 @@ def download_file(args):
                 print('\nError downloading file: ', timestamp, '\nFrom :', url)
                 return 0
 
-    # Begin processing
-    process_noaa(temp_output, output_path, timestamp)
+        # Begin processing
+        process_noaa(temp_output, output_path, timestamp)
+
+    if provider == 'DSA':
+        process_dsa(temp_output, output_path, timestamp)
