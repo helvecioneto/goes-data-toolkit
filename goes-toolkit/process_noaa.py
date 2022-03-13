@@ -2,6 +2,7 @@ import os
 import numpy as np
 import netCDF4
 from osgeo import gdal
+
 gdal.PushErrorHandler('CPLQuietErrorHandler')   # Ignore GDAL warnings
 
 
