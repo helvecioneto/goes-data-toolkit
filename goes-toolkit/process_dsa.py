@@ -27,47 +27,20 @@ def process_dsa(temp_output, output_path, timestamp):
         array = np.frombuffer(file.read(), dtype=np.uint16)
         array = array.reshape((1714, 1870))
 
-        array_ = array.copy()
+        # # Find in array values equal 32767 and replace with NaN
+        array = np.where(array == 32767, np.nan, array)
 
-        # Find in array values equal 32767 and replace with NaN
-        array_[array_ == 32767] = 0
+        # # Apply scale factor
+        array = array / 1000
 
-        # Apply scale factor
-        array_ = array_ / 10000
+        rasterOrigin = (-100, -56)
+        pixelWidth = 0.04
+        pixelHeight = 0.04
 
-        # Boundbox
-        bbox = [-100.2, -55.3, -25.2, 12.3]
-
-        # Crop Boundbox
-        cbbox = list(map(float, os.getenv("bbox").split(",")))
-
-        xres = abs(bbox[0]-bbox[2]) / array_.shape[1]
-        yres = abs(bbox[1]-bbox[3]) / array_.shape[0]
-
-        # Set geo transform
-        geotransform = (bbox[0], xres, 0, bbox[3], 0, -yres)
-
-        driver = gdal.GetDriverByName('netCDF')
-        raw = driver.Create(temp_output + '.nc', array_.shape[1], array_.shape[0], 1, gdal.GDT_Float32)
-        raw.SetGeoTransform(geotransform)
-        raw.GetRasterBand(1).WriteArray(array_)
-
-        # Define the parameters of the output cropped image
-        kwargs = {'format': 'netCDF',
-                  'outputBounds': (cbbox[0], cbbox[3], cbbox[2], cbbox[1]),
-                  'outputType': gdal.GDT_Float32}
-
-        # Write the reprojected file on disk
-        gdal.Warp(temp_output+'.temp1.nc', raw, **kwargs)
+        array2raster(temp_output,rasterOrigin,pixelWidth,pixelHeight,array[::-1]) # convert array to raster
 
         # Close file
         file.close()
-
-        # Delete temp file
-        os.remove(temp_output)
-
-        # Remove temp_output + '.nc'
-        os.remove(temp_output + '.nc')
 
         # Transform timestamp to julian day
         julian_day = timestamp.timetuple().tm_yday
@@ -78,7 +51,7 @@ def process_dsa(temp_output, output_path, timestamp):
         time_of_day = int(hour_of_day + minute_of_hour)
 
         # Read netCDF using nc
-        nc = netCDF4.Dataset(temp_output + '.temp1.nc', 'r+')
+        nc = netCDF4.Dataset(temp_output, 'r+')
 
         # Add variable julian_day
         nc.createDimension('julian_day', 1)
@@ -100,8 +73,35 @@ def process_dsa(temp_output, output_path, timestamp):
         nc.close()
 
         # Move temp_output + '.temp1.nc'
-        os.rename(temp_output + '.temp1.nc', output_dir + output_file)
+        os.rename(temp_output, output_dir + output_file)
 
     except:
         print('Error: ' + timestamp)
         return 1
+
+
+def array2raster(newRasterfn,rasterOrigin,pixelWidth,pixelHeight,array):
+
+    cols = array.shape[1]
+    rows = array.shape[0]
+    originX = rasterOrigin[0]
+    originY = rasterOrigin[1]
+
+    driver = gdal.GetDriverByName('netCDF')
+    outRaster = driver.Create(newRasterfn + '.raw', cols, rows, 1, gdal.GDT_Float32)
+    outRaster.SetGeoTransform((originX, pixelWidth, 0, originY, 0, pixelHeight))
+    outRaster.GetRasterBand(1).WriteArray(array)   
+
+    # Crop
+    crop_bounds = [-40.48,-9.48,-34.6,-5.52]
+
+    # Define the parameters of the output cropped image
+    kwargs = {'format': 'netCDF',
+              'outputBounds': (crop_bounds[0], crop_bounds[3], crop_bounds[2], crop_bounds[1]),
+              'outputType': gdal.GDT_Float32}
+
+    # Write the reprojected file on disk
+    gdal.Warp(newRasterfn, outRaster, **kwargs)
+
+    # Remove raw
+    os.remove(newRasterfn + '.raw')
