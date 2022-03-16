@@ -3,6 +3,7 @@ import os
 import pandas as pd
 from pytimeparse.timeparse import timeparse
 import __init__
+from datetime import datetime
 
 
 def filterdata():
@@ -10,12 +11,9 @@ def filterdata():
     # Read guide data
     guide_df = pd.read_pickle(__init__.__program_name__+'/file_guide.pkl', compression='gzip')
 
-    # Read guide data
-    guide_df = pd.read_pickle(__init__.__program_name__+'/file_guide.pkl', compression='gzip')
-
     # Set parameters
-    start_date = pd.to_datetime(os.getenv('s')).strftime('%Y-%m-%d %H:%M:%S')
-    end_date = pd.to_datetime(os.getenv('e')).strftime('%Y-%m-%d %H:%M:%S')
+    start_date = pd.to_datetime(os.getenv('s')).to_pydatetime()
+    end_date = pd.to_datetime(os.getenv('e')).to_pydatetime()
     sat = os.getenv('sat')
     provider = os.getenv('p')
     interval = timeparse(os.getenv('i'))
@@ -30,7 +28,21 @@ def filterdata():
         guide_df = guide_df[(guide_df['channel'] == int(channel))]
 
     # Lock by start_date and end_date
-    guide_df = guide_df[start_date:end_date].sort_index()
+    try:
+        guide_df = guide_df[(guide_df.index >= start_date) & (guide_df.index <= end_date)].sort_index()
+    except:
+        # print(guide_df)
+        guide_df = guide_df.loc[guide_df.index >= os.getenv('s')].sort_index()
+        guide_df = guide_df.loc[guide_df.index <= os.getenv('e')].sort_index()
+
+    # Check if guid_df is empty
+    if guide_df.empty:
+        print('No data found for this provider, satellite, channel, start_date and end_date')
+        print(sat, provider, channel, start_date, end_date)
+        exit(0)
+
+    # Transform data_frame.index to datetime
+    guide_df.index = pd.to_datetime(guide_df.index)
 
     # Lock by timedelta frequency at interval seconds
     guide_df = guide_df.groupby(pd.Grouper(freq=str(interval) + 's')).first()
