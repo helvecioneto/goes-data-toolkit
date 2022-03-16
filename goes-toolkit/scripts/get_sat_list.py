@@ -1,7 +1,11 @@
 import requests
 from threading import Thread
+from multiprocessing import Pool
 import pandas as pd
 import os
+import s3fs
+import datetime
+import time
 
 
 def get_dsa_goes13_list():
@@ -154,6 +158,72 @@ def get_noaa_files(args):
     output_df.to_csv('files/noaa/noaa_'+year+'_'+month+'.csv', index=False)
 
 
+def get_aws_goes16():
+    print('Getting AWS GOES16 data...')
+
+    # Create a dataframe
+    output_df = pd.DataFrame()
+
+    # Seting the bucket
+    server = 'noaa-goes16/'
+    products = ['ABI-L1b-RadC/', 'ABI-L2-CMIPF/']
+
+    # Range of the years beteen 2017 to current year to string
+    years = range(2017, datetime.datetime.now().year)
+
+    # Make a list of julian days
+    julian_days = [julian_day for julian_day in range(1, 367)]
+
+    # Range of hours of day
+    hours = range(0, 24)
+
+    # list of buckets
+    buckets = []
+    # list of timestamps
+    timestamps = []
+
+    # For each product
+    for product in products:
+        # For each year
+        for year in years:
+            # Check if the year is a leap year
+            if year % 4 == 0:
+                # Append the julian day 366 to julian_days
+                julian_days.append(366)
+            # For each julian day
+            for julian_day in julian_days:
+                # For each hour
+                for hour in hours:
+                    # Create the bucket
+                    bucket = server + product + str(year) + '/' + str(julian_day) + '/' + str(hour) + '/'
+                    # Strip julian day current datetime check if is a leap year
+                    month_day = datetime.datetime.strptime(str(julian_day), '%j').strftime('%m-%d')
+                    # Mount timestamp
+                    timestamp = str(year) + '-' + month_day + '-' + str(hour) + ':00:00'
+                    # Convert timestamp to datetime
+                    timestamp = datetime.datetime.strptime(timestamp, '%Y-%m-%d-%H:%M:%S')
+
+                    # Append the bucket to the list
+                    buckets.append(bucket)
+
+                    # Append the timestamp to the list
+                    timestamps.append(timestamp)
+
+    # Create a dataframe
+    output_df['url'] = buckets
+    output_df['timestamp'] = timestamps
+    output_df['provider'] = 'AWS'
+    output_df['channel'] = None
+    output_df['file'] = None
+    output_df['sat'] = 'goes16'
+
+    # Sort the dataframe by timestamp
+    output_df = output_df.sort_values(by='timestamp')
+
+    # Write the dataframe to a csv file
+    output_df.to_csv('files/aws/aws_goes16.csv', index=False)
+
+
 def merge_all_files():
     """
     Merge all the csv files in the directory.
@@ -182,8 +252,18 @@ def merge_all_files():
     dsa_df_goes13['channel'] = dsa_df_goes13.channel.str.extract(r"[ch](?P<timestamp>\d)", expand=False).astype(int)
     dsa_df_goes13['sat'] = 'goes13'
 
+    # AWS S3 DF
+    aws_df = pd.DataFrame()
+
+    # Read the csv files
+    for file in os.listdir('files/aws/'):
+        if file.endswith('.csv'):
+            df = pd.read_csv('files/aws/'+file)
+            # Concatenate the dataframe
+            aws_df = pd.concat([aws_df, df])
+
     # Concat dsa and noaa dataframes
-    output_df = pd.concat([dsa_df_goes13, noaa_df])
+    output_df = pd.concat([dsa_df_goes13, noaa_df, aws_df])
 
     # Drop columns year, month and file
     output_df = output_df.drop(['year', 'month', 'file'], axis=1)
@@ -194,6 +274,9 @@ def merge_all_files():
     # Save pickle file as compression
     output_df.to_pickle('../file_guide.pkl', compression='gzip')
 
+    print('File guide created!')
+    print(output_df)
+
 
 if __name__ == '__main__':
 
@@ -202,12 +285,20 @@ if __name__ == '__main__':
         os.makedirs('files/dsa/')
     if not os.path.exists('files/noaa/'):
         os.makedirs('files/noaa/')
+    if not os.path.exists('files/aws/'):
+        os.makedirs('files/aws/')
 
     # print('Getting the list Data in NOAA...')
     # get_noaa_satl_list()
+    # print('NOAA list data downloaded!')
 
     # print('Getting the list Data in DSA...')
     # get_dsa_goes13_list()
+    # print('DSA list data downloaded!')
+
+    print('Getting the list Data in AWS...')
+    get_aws_goes16()
+    print('AWS list data downloaded!')
 
     print('Merging all the csv files...')
     merge_all_files()
