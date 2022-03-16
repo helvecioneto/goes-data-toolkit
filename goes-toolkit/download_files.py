@@ -2,6 +2,7 @@ import os
 import s3fs
 from process_noaa import process_noaa
 from process_dsa import process_dsa
+import pathlib
 
 
 def download_file(args):
@@ -70,4 +71,17 @@ def download_file(args):
         # Sett aws credentials as annonymous
         aws = s3fs.S3FileSystem(anon=True)
 
-        print(aws.ls(url))
+        files = aws.ls(url)
+
+        for file in files:
+            elements = pathlib.Path(file)
+            # Get first element
+            buckt_name = elements.parts[0]
+
+            # Secondary path
+            path = '/'.join(elements.parts[1:])
+
+            # Mount url
+            url_file = 'https://'+buckt_name+'.s3.amazonaws.com/'+path
+
+            print(url_file)
