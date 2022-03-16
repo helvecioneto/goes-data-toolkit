@@ -19,6 +19,7 @@ def filterdata():
     interval = timeparse(os.getenv('i'))
     between_times = list(map(str, os.getenv("bt").split(",")))
     channel = os.getenv('c')
+    product = os.getenv('prod')
 
     # lock parameters in guid_df
     guide_df = guide_df[(guide_df['sat'] == sat) & (guide_df['provider'] == provider)]
@@ -26,6 +27,11 @@ def filterdata():
     # Check if provider is DSA to get channel from list
     if provider == 'DSA' and channel != 'None':
         guide_df = guide_df[(guide_df['channel'] == int(channel))]
+
+    # Check if provider is AWS to get channel from list
+    if provider == 'AWS' and product != 'None':
+        # Find in url column values that contain product
+        guide_df = guide_df[(guide_df['url'].str.contains(product))]
 
     # Lock by start_date and end_date
     try:

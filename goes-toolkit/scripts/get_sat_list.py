@@ -3,9 +3,7 @@ from threading import Thread
 from multiprocessing import Pool
 import pandas as pd
 import os
-import s3fs
 import datetime
-import time
 
 
 def get_dsa_goes13_list():
@@ -168,57 +166,25 @@ def get_aws_goes16():
     server = 'noaa-goes16/'
     products = ['ABI-L1b-RadC/', 'ABI-L2-CMIPF/']
 
-    # Range of the years beteen 2017 to current year to string
-    years = range(2017, datetime.datetime.now().year)
+    # Create pandas date_range init 2017 and end current date with freq='1H'
+    date_range = pd.date_range(start='2017-01-01',
+                               end=datetime.date.today(), freq='1H')
 
-    # Make a list of julian days
-    julian_days = [julian_day for julian_day in range(1, 367)]
-
-    # Range of hours of day
-    hours = range(0, 24)
-
-    # list of buckets
-    buckets = []
-    # list of timestamps
-    timestamps = []
-
-    # For each product
+    # for each produt in products
     for product in products:
-        # For each year
-        for year in years:
-            # Check if the year is a leap year
-            if year % 4 == 0:
-                # Append the julian day 366 to julian_days
-                julian_days.append(366)
-            # For each julian day
-            for julian_day in julian_days:
-                # For each hour
-                for hour in hours:
-                    # Create the bucket
-                    bucket = server + product + str(year) + '/' + str(julian_day) + '/' + str(hour) + '/'
-                    # Strip julian day current datetime check if is a leap year
-                    month_day = datetime.datetime.strptime(str(julian_day), '%j').strftime('%m-%d')
-                    # Mount timestamp
-                    timestamp = str(year) + '-' + month_day + '-' + str(hour) + ':00:00'
-                    # Convert timestamp to datetime
-                    timestamp = datetime.datetime.strptime(timestamp, '%Y-%m-%d-%H:%M:%S')
+        # Make a temp df with date_range
+        temp_df = pd.DataFrame(date_range, columns=['timestamp'])
 
-                    # Append the bucket to the list
-                    buckets.append(bucket)
+        # Make a url column based on each row in temp_df
+        temp_df['url'] = temp_df.timestamp.apply(lambda x: x.strftime(server+product+'%Y/%j/%H'))
 
-                    # Append the timestamp to the list
-                    timestamps.append(timestamp)
+        # Concatenate to output_df
+        output_df = pd.concat([output_df, temp_df])
 
-    # Create a dataframe
-    output_df['url'] = buckets
-    output_df['timestamp'] = timestamps
     output_df['provider'] = 'AWS'
     output_df['channel'] = None
     output_df['file'] = None
     output_df['sat'] = 'goes16'
-
-    # Sort the dataframe by timestamp
-    output_df = output_df.sort_values(by='timestamp')
 
     # Write the dataframe to a csv file
     output_df.to_csv('files/aws/aws_goes16.csv', index=False)
@@ -275,7 +241,6 @@ def merge_all_files():
     output_df.to_pickle('../file_guide.pkl', compression='gzip')
 
     print('File guide created!')
-    print(output_df)
 
 
 if __name__ == '__main__':
@@ -296,9 +261,9 @@ if __name__ == '__main__':
     # get_dsa_goes13_list()
     # print('DSA list data downloaded!')
 
-    print('Getting the list Data in AWS...')
-    get_aws_goes16()
-    print('AWS list data downloaded!')
+    # print('Getting the list Data in AWS...')
+    # get_aws_goes16()
+    # print('AWS list data downloaded!')
 
     print('Merging all the csv files...')
     merge_all_files()

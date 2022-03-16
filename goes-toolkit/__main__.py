@@ -132,6 +132,16 @@ def main():
         required=False,
     )
 
+    # Add product if data is AWS
+    parser.add_argument(
+        "-prod",
+        type=str,
+        metavar='',
+        help="Output Directory",
+        default='ABI-L2-CMIPF',
+        required=False,
+    )
+
     # Add all parsers to option
     options = parser.parse_args()
 

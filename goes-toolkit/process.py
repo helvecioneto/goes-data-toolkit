@@ -4,7 +4,6 @@ import multiprocessing
 from check_error import checkerrors
 from filter_data import filterdata
 from download_files import download_file
-from process_noaa import process_noaa
 
 import warnings
 warnings.filterwarnings("ignore")

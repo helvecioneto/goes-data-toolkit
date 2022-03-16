@@ -23,7 +23,7 @@ def checkerrors():
 
     # Check provider
     provider = os.getenv('p')
-    if provider != 'DSA' and provider != 'NOAA':
+    if provider != 'DSA' and provider != 'NOAA' and provider != 'AWS':
         print('Invalid value for \'-p\' parameter: ', provider)
-        print('Only accept provider = NOAA or DSA')
+        print('Only accept provider = NOAA, DSA or AWS')
         exit(0)

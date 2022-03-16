@@ -1,5 +1,5 @@
 import os
-import requests
+import s3fs
 from process_noaa import process_noaa
 from process_dsa import process_dsa
 
@@ -13,9 +13,6 @@ def download_file(args):
 
     if url == None:
         return
-
-    # Get file size
-    size_of_file = requests.head(url).headers['content-length']
 
     # Check provider
     if provider == 'DSA':
@@ -66,3 +63,11 @@ def download_file(args):
 
     if provider == 'DSA':
         process_dsa(temp_output, output_path, timestamp)
+
+    if provider == 'AWS':
+        print('\n\nDownloading file: ', timestamp, '\nFrom :', url)
+
+        # Sett aws credentials as annonymous
+        aws = s3fs.S3FileSystem(anon=True)
+
+        print(aws.ls(url))
