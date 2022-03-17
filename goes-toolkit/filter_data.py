@@ -3,7 +3,6 @@ import os
 import pandas as pd
 from pytimeparse.timeparse import timeparse
 import __init__
-from datetime import datetime
 
 
 def filterdata():
@@ -56,15 +55,15 @@ def filterdata():
         print(sat, provider, channel, start_date, end_date)
         exit(0)
 
-    # Lock by timedelta frequency at interval seconds
-    guide_df = guide_df.groupby(pd.Grouper(freq=str(interval) + 's')).first()
+    # Dont fit into AWS
+    if provider != 'AWS':
+        # Lock by timedelta frequency at interval seconds
+        guide_df = guide_df.groupby(pd.Grouper(freq=str(interval) + 's')).first()
 
-    # Ignore times between midnight and 6am at guid_df index timestamp
-    if between_times[0] != 'None':
-
-        between_times = [pd.to_datetime(tm).strftime('%H:%M:%S') for tm in between_times]
-
-        # Lock by between_times at index of guide_df
-        guide_df = guide_df.between_time(between_times[0], between_times[1])
+        # Ignore times between midnight and 6am at guid_df index timestamp
+        if between_times[0] != 'None':
+            between_times = [pd.to_datetime(tm).strftime('%H:%M:%S') for tm in between_times]
+            # Lock by between_times at index of guide_df
+            guide_df = guide_df.between_time(between_times[0], between_times[1])
 
     return guide_df
