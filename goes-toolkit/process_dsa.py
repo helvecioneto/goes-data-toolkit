@@ -37,7 +37,7 @@ def process_dsa(temp_output, output_path, timestamp):
         pixelWidth = 0.04
         pixelHeight = 0.04
 
-        array2raster(temp_output,rasterOrigin,pixelWidth,pixelHeight,array[::-1]) # convert array to raster
+        array2raster(temp_output, rasterOrigin, pixelWidth, pixelHeight, array[::-1])  # convert array to raster
 
         # Close file
         file.close()
@@ -80,7 +80,7 @@ def process_dsa(temp_output, output_path, timestamp):
         return 1
 
 
-def array2raster(newRasterfn,rasterOrigin,pixelWidth,pixelHeight,array):
+def array2raster(newRasterfn, rasterOrigin, pixelWidth, pixelHeight, array):
 
     cols = array.shape[1]
     rows = array.shape[0]
@@ -90,10 +90,10 @@ def array2raster(newRasterfn,rasterOrigin,pixelWidth,pixelHeight,array):
     driver = gdal.GetDriverByName('netCDF')
     outRaster = driver.Create(newRasterfn + '.raw', cols, rows, 1, gdal.GDT_Float32)
     outRaster.SetGeoTransform((originX, pixelWidth, 0, originY, 0, pixelHeight))
-    outRaster.GetRasterBand(1).WriteArray(array)   
+    outRaster.GetRasterBand(1).WriteArray(array)
 
     # Crop
-    crop_bounds = [-40.48,-9.48,-34.6,-5.52]
+    crop_bounds = [-40.48, -9.48, -34.6, -5.52]
 
     # Define the parameters of the output cropped image
     kwargs = {'format': 'netCDF',

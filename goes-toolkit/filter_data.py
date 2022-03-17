@@ -12,8 +12,8 @@ def filterdata():
     guide_df = pd.read_pickle(__init__.__program_name__+'/file_guide.pkl', compression='gzip')
 
     # Set parameters
-    start_date = pd.to_datetime(os.getenv('s')).to_pydatetime()
-    end_date = pd.to_datetime(os.getenv('e')).to_pydatetime()
+    start_date = os.getenv('s')
+    end_date = os.getenv('e')
     sat = os.getenv('sat')
     provider = os.getenv('p')
     interval = timeparse(os.getenv('i'))
@@ -21,8 +21,25 @@ def filterdata():
     channel = os.getenv('c')
     product = os.getenv('prod')
 
-    # lock parameters in guid_df
-    guide_df = guide_df[(guide_df['sat'] == sat) & (guide_df['provider'] == provider)]
+    # Reset index
+    guide_df.reset_index(inplace=True)
+
+    # Set timestamp as datetime
+    guide_df['timestamp'] = pd.to_datetime(guide_df['timestamp'])
+
+    # Set timestamp as index
+    guide_df.set_index('timestamp', inplace=True)
+
+    # Lock data between start and end date
+    guide_df = guide_df[start_date:end_date]
+
+    # Check if sat is different from None
+    if sat != 'None':
+        guide_df = guide_df.query('sat == @sat')
+
+    # Check if provider is different None
+    if provider != 'None':
+        guide_df = guide_df.query('provider == @provider')
 
     # Check if provider is DSA to get channel from list
     if provider == 'DSA' and channel != 'None':
@@ -33,28 +50,18 @@ def filterdata():
         # Find in url column values that contain product
         guide_df = guide_df[(guide_df['url'].str.contains(product))]
 
-    # Lock by start_date and end_date
-    try:
-        guide_df = guide_df[(guide_df.index >= start_date) & (guide_df.index <= end_date)].sort_index()
-    except:
-        # print(guide_df)
-        guide_df = guide_df.loc[guide_df.index >= os.getenv('s')].sort_index()
-        guide_df = guide_df.loc[guide_df.index <= os.getenv('e')].sort_index()
-
     # Check if guid_df is empty
     if guide_df.empty:
         print('No data found for this provider, satellite, channel, start_date and end_date')
         print(sat, provider, channel, start_date, end_date)
         exit(0)
 
-    # Transform data_frame.index to datetime
-    guide_df.index = pd.to_datetime(guide_df.index)
-
     # Lock by timedelta frequency at interval seconds
     guide_df = guide_df.groupby(pd.Grouper(freq=str(interval) + 's')).first()
 
     # Ignore times between midnight and 6am at guid_df index timestamp
-    if between_times != ['None']:
+    if between_times[0] != 'None':
+
         between_times = [pd.to_datetime(tm).strftime('%H:%M:%S') for tm in between_times]
 
         # Lock by between_times at index of guide_df

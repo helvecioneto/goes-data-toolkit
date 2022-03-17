@@ -20,7 +20,7 @@ def main():
         prefix_chars="**-",
         epilog=__init__.__program_name__ + "-v1.0",
         usage=__init__.__program_name__
-        + "\nExemple for usage:\n$ python %(prog)s -start 2010-01-01 -end 2010-01-02 -interval 30min\n"
+        + "\nExemple for usage:\n$ python %(prog)s -s 2010-01-01 -e 2020-01-02 -i 30min -p NOAA\n"
         "\nor type '%(prog)s -h' for more information.\n ",
         description="Global parameters",
     )
@@ -79,8 +79,7 @@ def main():
         "-p",
         type=str,
         metavar='',
-        help="NOAA or DSA(INPE)",
-        default="NOAA",
+        help="NOAA, Amazon (AWS) or DSA(INPE)",
         required=False,
     )
 
