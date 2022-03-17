@@ -186,8 +186,10 @@ def get_aws_goes16():
     output_df['file'] = None
     output_df['sat'] = 'goes16'
 
+    print(date_range)
+
     # Write the dataframe to a csv file
-    output_df.to_csv('files/aws/aws_goes16.csv', index=False)
+    # output_df.to_csv('files/aws/aws_goes16.csv', index=False)
 
 
 def merge_all_files():
@@ -261,12 +263,12 @@ if __name__ == '__main__':
     # get_dsa_goes13_list()
     # print('DSA list data downloaded!')
 
-    # print('Getting the list Data in AWS...')
-    # get_aws_goes16()
-    # print('AWS list data downloaded!')
+    print('Getting the list Data in AWS...')
+    get_aws_goes16()
+    print('AWS list data downloaded!')
 
-    print('Merging all the csv files...')
-    merge_all_files()
+    # print('Merging all the csv files...')
+    # merge_all_files()
 
     # # Delete directory files
     # os.system('rm -rf files')
