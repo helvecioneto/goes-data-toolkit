@@ -131,7 +131,7 @@ def process_noaa(temp_dir, output, timestamp):
         os.system("ncatted -O -a comment," + var_name + ",o,c,\""+str(comment)+"\" "+str(temp_dir) + '.temp1.nc')
 
         # Add global attributes
-        os.system("ncatted -O -a processed,global,o,c,\"INPE-LABREN (2022) by: Helvecio B. L. Neto (helvecio.neto@inpe.br)\" "+str(temp_dir) + '.temp1.nc')
+        os.system("ncatted -O -a processed,global,o,c,\" by: Helvecio B. L. Neto (helvecioblneto@gmail.com)\" "+str(temp_output) + '.temp1.nc')
 
         # Add global_dict to attributes
         for k in global_dict.keys():
