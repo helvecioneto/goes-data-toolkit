@@ -31,9 +31,9 @@ def process_dsa(temp_output, output_path, timestamp):
         array = np.where(array == 32767, np.nan, array)
 
         # # Apply scale factor
-        array = array / 1000
+        # array = array / 1000
 
-        rasterOrigin = (-100, -56)
+        rasterOrigin = (-100.2, -56)
         pixelWidth = 0.04
         pixelHeight = 0.04
 

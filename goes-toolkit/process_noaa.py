@@ -93,95 +93,105 @@ def process_noaa(temp_dir, output, timestamp):
     # Load the data
     ds = img.ReadAsArray(0, 0, img.RasterXSize, img.RasterYSize)
 
+    # Filter values undef
+    ds[ds == undef] = 0
+
+    print('Sem fator de scala', np.nanmax(ds), np.nanmin(ds))
+
     # Apply the scale, offset
-    ds = (ds * scale)
+    ds = ds * scale * 1000
+
+    ds = ds / np.cos(1.24910362)
+
+    print('Com fator de scala', np.nanmax(ds), np.nanmin(ds))
 
     # Apply scale, offset, and undef
     GeoT = img.GetGeoTransform()
     driver = gdal.GetDriverByName('netCDF')
-    raw = driver.Create(temp_dir + '.raw', ds.shape[1], ds.shape[0], 1, gdal.GDT_Float32)
+    raw = driver.Create(temp_dir, ds.shape[1], ds.shape[0], 1, gdal.GDT_Float32)
     raw.SetGeoTransform(GeoT)
     raw.GetRasterBand(1).WriteArray(ds)
+    # Close the file
+    raw.FlushCache()
 
     # Define the parameters of the output cropped image
     kwargs = {'format': 'netCDF',
               'outputBounds': (bbox[0], bbox[3], bbox[2], bbox[1]),
               'outputType': gdal.GDT_Float32,
-              'dstNodata': 'nan',
-              'srcNodata': undef}
+              }
 
     # Write the reprojected file on disk
-    gdal.Warp(temp_dir+'.temp1.nc', raw, **kwargs)
+    gdal.Warp(temp_dir, raw, **kwargs)
 
-    # Remove temp_dir + '.raw'
-    os.remove(temp_dir + '.raw')
+    # # Remove temp_dir + '.raw'
+    # os.remove(temp_dir + '.raw')
 
-    # Add variables from metadata atributes
-    os.system("ncrename -h -O -v Band1," + var_name + " " + temp_dir + '.temp1.nc')
-    os.system("ncatted -O -a long_name," + var_name + ",o,c,\""+str(long_name)+"\" "+str(temp_dir) + '.temp1.nc')
-    os.system("ncatted -O -a coordinates," + var_name + ",o,c,\""+str(coordinates)+"\" "+str(temp_dir) + '.temp1.nc')
-    os.system("ncatted -O -a units," + var_name + ",o,c,\""+str(units)+"\" "+str(temp_dir) + '.temp1.nc')
-    os.system("ncatted -O -a scale_factor," + var_name + ",o,f,\""+str(scale_factor)+"\" "+str(temp_dir) + '.temp1.nc')
-    os.system("ncatted -O -a add_offset," + var_name + ",o,f,\""+str(add_offset)+"\" "+str(temp_dir) + '.temp1.nc')
-    os.system("ncatted -O -a valid_range," + var_name + ",o,c,\""+str(valid_range)+"\" "+str(temp_dir) + '.temp1.nc')
-    os.system("ncatted -O -a actual_range," + var_name + ",o,c,\""+str(actual_range)+"\" "+str(temp_dir) + '.temp1.nc')
-    os.system("ncatted -O -a missing_value," + var_name + ",o,s,\""+str(missing_value)+"\" "+str(temp_dir) + '.temp1.nc')
-    os.system("ncatted -O -a _FillValue," + var_name + ",o,s,\""+str(_FillValue)+"\" "+str(temp_dir) + '.temp1.nc')
-    os.system("ncatted -O -a coverage_content_type," + var_name + ",o,c,\""+str(coverage_content_type)+"\" "+str(temp_dir) + '.temp1.nc')
-    os.system("ncatted -O -a comment," + var_name + ",o,c,\""+str(comment)+"\" "+str(temp_dir) + '.temp1.nc')
+    # # Add variables from metadata atributes
+    # os.system("ncrename -h -O -v Band1," + var_name + " " + temp_dir + '.temp1.nc')
+    # os.system("ncatted -O -a long_name," + var_name + ",o,c,\""+str(long_name)+"\" "+str(temp_dir) + '.temp1.nc')
+    # os.system("ncatted -O -a coordinates," + var_name + ",o,c,\""+str(coordinates)+"\" "+str(temp_dir) + '.temp1.nc')
+    # os.system("ncatted -O -a units," + var_name + ",o,c,\""+str(units)+"\" "+str(temp_dir) + '.temp1.nc')
+    # os.system("ncatted -O -a scale_factor," + var_name + ",o,f,\""+str(scale_factor)+"\" "+str(temp_dir) + '.temp1.nc')
+    # os.system("ncatted -O -a add_offset," + var_name + ",o,f,\""+str(add_offset)+"\" "+str(temp_dir) + '.temp1.nc')
+    # os.system("ncatted -O -a valid_range," + var_name + ",o,c,\""+str(valid_range)+"\" "+str(temp_dir) + '.temp1.nc')
+    # os.system("ncatted -O -a actual_range," + var_name + ",o,c,\""+str(actual_range)+"\" "+str(temp_dir) + '.temp1.nc')
+    # os.system("ncatted -O -a missing_value," + var_name + ",o,s,\""+str(missing_value)+"\" "+str(temp_dir) + '.temp1.nc')
+    # os.system("ncatted -O -a _FillValue," + var_name + ",o,s,\""+str(_FillValue)+"\" "+str(temp_dir) + '.temp1.nc')
+    # os.system("ncatted -O -a coverage_content_type," + var_name + ",o,c,\""+str(coverage_content_type)+"\" "+str(temp_dir) + '.temp1.nc')
+    # os.system("ncatted -O -a comment," + var_name + ",o,c,\""+str(comment)+"\" "+str(temp_dir) + '.temp1.nc')
 
-    # Add global attributes
-    os.system("ncatted -O -a processed,global,o,c,\" by: Helvecio B. L. Neto (helvecioblneto@gmail.com)\" "+str(temp_output) + '.temp1.nc')
+    # # Add global attributes
+    # os.system("ncatted -O -a processed,global,o,c,\" by: Helvecio B. L. Neto (helvecioblneto@gmail.com)\" "+str(temp_dir) + '.temp1.nc')
 
-    # Add global_dict to attributes
-    for k in global_dict.keys():
-        os.system("ncatted -O -a " + k[10:] + ",global,o,c,\""+str(global_dict[k])+"\" "+str(temp_dir) + '.temp1.nc')
+    # # Add global_dict to attributes
+    # for k in global_dict.keys():
+    #     os.system("ncatted -O -a " + k[10:] + ",global,o,c,\""+str(global_dict[k])+"\" "+str(temp_dir) + '.temp1.nc')
 
-    # Add variables
-    # Read netCDF using nc
-    nc = netCDF4.Dataset(temp_dir + '.temp1.nc', 'r+')
+    # # Add variables
+    # # Read netCDF using nc
+    # nc = netCDF4.Dataset(temp_dir + '.temp1.nc', 'r+')
 
-    # Add variable satlat
-    nc.createDimension('satlat', 1)
-    nc.createVariable('satlat', 'f4', ('satlat',))
-    nc.variables['satlat'][:] = satlat_value
-    nc.variables['satlat'].long_name = satlat_long_name
-    nc.variables['satlat'].units = satlat_units
+    # # Add variable satlat
+    # nc.createDimension('satlat', 1)
+    # nc.createVariable('satlat', 'f4', ('satlat',))
+    # nc.variables['satlat'][:] = satlat_value
+    # nc.variables['satlat'].long_name = satlat_long_name
+    # nc.variables['satlat'].units = satlat_units
 
-    # Add variable satlon
-    nc.createDimension('satlon', 1)
-    nc.createVariable('satlon', 'f4', ('satlon',))
-    nc.variables['satlon'][:] = satlon_value
-    nc.variables['satlon'].long_name = satlon_long_name
-    nc.variables['satlon'].units = satlon_units
+    # # Add variable satlon
+    # nc.createDimension('satlon', 1)
+    # nc.createVariable('satlon', 'f4', ('satlon',))
+    # nc.variables['satlon'][:] = satlon_value
+    # nc.variables['satlon'].long_name = satlon_long_name
+    # nc.variables['satlon'].units = satlon_units
 
-    # Add variable julian_day
-    nc.createDimension('julian_day', 1)
-    nc.createVariable('julian_day', 'f4', ('julian_day',))
-    nc.variables['julian_day'][:] = julian_day
-    nc.variables['julian_day'].long_name = 'Julian day'
-    nc.variables['julian_day'].units = 'day'
-    nc.variables['julian_day'].comment = str(julian_day)
+    # # Add variable julian_day
+    # nc.createDimension('julian_day', 1)
+    # nc.createVariable('julian_day', 'f4', ('julian_day',))
+    # nc.variables['julian_day'][:] = julian_day
+    # nc.variables['julian_day'].long_name = 'Julian day'
+    # nc.variables['julian_day'].units = 'day'
+    # nc.variables['julian_day'].comment = str(julian_day)
 
-    # Add variable time_of_day
-    nc.createDimension('time_of_day', 1)
-    nc.createVariable('time_of_day', 'f4', ('time_of_day',))
-    nc.variables['time_of_day'][:] = time_of_day
-    nc.variables['time_of_day'].long_name = 'Time of day'
-    nc.variables['time_of_day'].units = 'hour and minute'
-    nc.variables['time_of_day'].comment = str(time_of_day)
+    # # Add variable time_of_day
+    # nc.createDimension('time_of_day', 1)
+    # nc.createVariable('time_of_day', 'f4', ('time_of_day',))
+    # nc.variables['time_of_day'][:] = time_of_day
+    # nc.variables['time_of_day'].long_name = 'Time of day'
+    # nc.variables['time_of_day'].units = 'hour and minute'
+    # nc.variables['time_of_day'].comment = str(time_of_day)
 
-    # Close the file
-    nc.close()
+    # # Close the file
+    # nc.close()
 
-    # Remove local file
-    os.remove(temp_dir)
+    # # Remove local file
+    # os.remove(temp_dir)
 
-    # Rename file
-    os.rename(temp_dir + '.temp1.nc', temp_dir)
+    # # Rename file
+    # os.rename(temp_dir + '.temp1.nc', temp_dir)
 
-    # Move file to output directory
-    os.rename(temp_dir, output_dir + output_file)
+    # # Move file to output directory
+    # os.rename(temp_dir, output_dir + output_file)
     # except:
     #     print('Error: ' + timestamp)
     #     return 1

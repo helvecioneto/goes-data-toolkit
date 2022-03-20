@@ -8,6 +8,7 @@ output/
 temp/
 log/
 goes-toolkit/scripts/files/
+goes-toolkit/scripts/testes/
 
 # C extensions
 *.so
