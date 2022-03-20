@@ -36,9 +36,9 @@ print(np.nanmax(array),np.nanmin(array),np.nanmean(array))
 
 # Read the original file projection and configure the output projection
 source_prj = osr.SpatialReference()
-source_prj.ImportFromProj4(img.GetProjectionRef())
+source_prj.ImportFromProj4("+proj=longlat +datum=WGS84 +no_defs")
 target_prj = osr.SpatialReference()
-target_prj.ImportFromProj4("+proj=merc +ellps=WGS84 +datum=WGS84 +units=m +no_defs")
+target_prj.ImportFromProj4("+proj=longlat +datum=WGS84 +no_defs")
 
 # Reproject the data
 GeoT = img.GetGeoTransform()
@@ -53,7 +53,7 @@ kwargs = {'format': 'netCDF', \
           # 'dstSRS': target_prj, \
           'outputBounds': (extent[0], extent[3], extent[2], extent[1]), \
           # 'outputBoundsSRS': target_prj, \
-          'outputType': gdal.GDT_Float32, \
+          'outputType': gdal.GDT_Float32,
           # 'srcNodata': -99, \
           # 'dstNodata': -99, \
           # 'xRes': 12000, \
