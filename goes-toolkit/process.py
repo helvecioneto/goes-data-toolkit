@@ -44,8 +44,8 @@ def process_files():
                         level=logging.INFO)
 
     # Create a pool of processes
-    # parallel_processes = multiprocessing.cpu_count() - 1
-    parallel_processes = 6
+    parallel_processes = multiprocessing.cpu_count() - 1
+    # parallel_processes = 6
     pool = multiprocessing.Pool(parallel_processes)
 
     # Process files

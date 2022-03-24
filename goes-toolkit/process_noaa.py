@@ -159,8 +159,8 @@ def process_noaa(temp_dir, output, timestamp):
 
     # Add variable julian_day
     nc.createDimension('julian_day', 1)
-    nc.createVariable('julian_day', 'f4', ('julian_day',))
-    nc.variables['julian_day'][:] = julian_day
+    nc.createVariable('julian_day', 'i2', ('julian_day',))
+    nc.variables['julian_day'][:] = int(julian_day)
     nc.variables['julian_day'].long_name = 'Julian day'
     nc.variables['julian_day'].units = 'day'
     nc.variables['julian_day'].comment = str(julian_day)
