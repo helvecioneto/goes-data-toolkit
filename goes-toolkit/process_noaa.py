@@ -16,7 +16,7 @@ def process_noaa(temp_dir, output, timestamp):
     #  Parameters
     var_name = 'ch' + os.getenv('c')
     output_dir = output + '/' + var_name + '/' + timestamp.strftime('%Y') + \
-        '/' + timestamp.strftime('%m') + '/' + timestamp.strftime('%d') + '/'
+        '/' + timestamp.strftime('%m') + '/'
 
     # Output file
     output_file = timestamp.strftime('%Y%m%d_%H%M.nc')
