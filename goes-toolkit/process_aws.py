@@ -75,16 +75,13 @@ def process_aws(temp_output, output, timestamp, c_scan, s_scan):
                 'dstSRS': target_prj,
                 'outputBounds': (bbox[0], bbox[3], bbox[2], bbox[1]),
                 'outputBoundsSRS': target_prj,
-                #   'outputType': gdal.GDT, \
-                # 'srcNodata': undef, \
-                #   'dstNodata': 'nan', \
                 'xRes': 0.01, 
                 'yRes': 0.01, 
                 'resampleAlg': gdal.GRA_NearestNeighbour # Reamostragem NearestNeighbour
                 }
 
     # Write the reprojected file on disk
-    gdal.Warp(temp_output, img, **kwargs)
+    gdal.Warp(temp_output + 'reprojetado.nc', img, **kwargs)
 
     # close the original file
     img.FlushCache()

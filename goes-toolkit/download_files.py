@@ -185,4 +185,4 @@ def download_aws(args):
             return 0
 
     # Call process aws
-    process_aws(temp_output, output_path, timestamp, c_scan, s_scan)
+    #process_aws(temp_output, output_path, timestamp, c_scan, s_scan)
