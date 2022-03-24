@@ -165,10 +165,13 @@ def process_noaa(temp_dir, output, timestamp):
     nc.variables['julian_day'].units = 'day'
     nc.variables['julian_day'].comment = str(julian_day)
 
+    # Convert time_of_day to string char
+    time_of_day_char = netCDF4.stringtochar(np.array([str(time_of_day)], 'S4'))
+
     # Add variable time_of_day
-    nc.createDimension('time_of_day', 1)
-    nc.createVariable('time_of_day', 'f4', ('time_of_day',))
-    nc.variables['time_of_day'][:] = time_of_day
+    nc.createDimension('time_of_day', 4)
+    nc.createVariable('time_of_day', 'S1', ('time_of_day',))
+    nc.variables['time_of_day'][:] = time_of_day_char
     nc.variables['time_of_day'].long_name = 'Time of day'
     nc.variables['time_of_day'].units = 'hour and minute'
     nc.variables['time_of_day'].comment = str(time_of_day)
