@@ -45,7 +45,7 @@ def process_files():
 
     # Create a pool of processes
     # parallel_processes = multiprocessing.cpu_count() - 1
-    parallel_processes = 3
+    parallel_processes = 6
     pool = multiprocessing.Pool(parallel_processes)
 
     # Process files
