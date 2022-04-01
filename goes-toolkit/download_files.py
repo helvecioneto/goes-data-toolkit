@@ -131,11 +131,12 @@ def download_file(args):
         # Check if frame_df
         if frame_df.empty:
             # Write in logfile
-            print('\nError downloading file: ', timestamp, '\nFrom :', url)
+            print('\File not found to download: ', timestamp, '\nFrom :', url)
+            print('Writting in logfile')
             # Write file at './logs/+output_file+'
             with open('./logs/' + str(timestamp.strftime('%Y%m%d_%H%M%S')) + '.file_not_found.log', 'w') as f:
                 f.write(str(sys.exc_info()))
-            return None
+            return pd.DataFrame()
 
         # Set s_scan as index
         frame_df = frame_df.set_index('timestamp')

@@ -8,6 +8,7 @@ from filter_data import filterdata
 from download_files import download_file
 from process_aws import process_aws
 from pytimeparse.timeparse import timeparse
+import sys
 warnings.filterwarnings("ignore")
 
 
@@ -84,8 +85,10 @@ def process_files():
             for flag in flags:
                 if flag == 0:
                     logging.info(f'Error downloading file: {filtered_df.iloc[idx + i]["timestamp"]}')
+                    continue
                 elif flag == 1:
                     logging.info(f'Downloaded file: {filtered_df.iloc[idx + i]["timestamp"]}')
+                    continue
 
     # Check if provider is AWS
     if provider == 'AWS':
@@ -130,9 +133,10 @@ def process_files():
 
             # Process files
             for aws_download in aws_download_parallel:
-                print('Processing file: ' + aws_download[2])
+                print('Processing file: ' + str(aws_download[2]))
                 if aws_download[0] == 0:
                     logging.info(f'Error downloading file: {aws_download[2]}')
+                    continue
                 else:
                     process_aws(aws_download[0], aws_download[1], aws_download[2])
 
@@ -160,6 +164,7 @@ def download_aws(args):
             attempts += 1
             # Write in logfile
             print('\nError downloading file: ', timestamp, '\nFrom :', url)
-            return 0, 0, 0
+            with open('./logs/' + str(timestamp.strftime('%Y%m%d_%H%M%S')) + '.file_not_found.log', 'w') as f:
+                f.write(str(sys.exc_info()))
 
     return temp_output, output, timestamp
