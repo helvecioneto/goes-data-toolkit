@@ -20,7 +20,7 @@ def main():
         prefix_chars="**-",
         epilog=__init__.__program_name__ + "-v1.0",
         usage=__init__.__program_name__
-        + "\npython goes-toolkit -s '2020-03-01 00:00' -e '2020-03-31 23:30' -bt '08:30,22:00' -i 30min -sat goes16 -c 02 -p AWS download\n"
+        + "\npython goes-toolkit -s '2020-06-06 08:00' -e '2020-06-06 22:00' -bt '09:00,22:00' -i 30min -sat goes16 -c 02 -p AWS download\n"
         "\nor type '%(prog)s -h' for more information.\n ",
         description="Global parameters",
     )

@@ -5,14 +5,13 @@ import sys
 import numpy as np
 
 
-def process_aws(temp_output, output, timestamp, c_scan, s_scan):
+def process_aws(temp_output, output, timestamp):
 
     try:
         # Parameters
         var_name = 'CMI'
 
-        output_dir = output + '/' + var_name + '/' + timestamp.strftime('%Y') + \
-            '/' + timestamp.strftime('%m') + '/'
+        output_dir = output + '/' + var_name + '/' + str(timestamp.strftime('%Y')) + '/' + str(timestamp.strftime('%m')) + '/'
 
         # Output file
         output_file = timestamp.strftime('%Y%m%d_%H%M.nc')

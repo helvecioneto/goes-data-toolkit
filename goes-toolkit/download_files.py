@@ -3,12 +3,12 @@ import os
 import s3fs
 from process_noaa import process_noaa
 from process_dsa import process_dsa
-from process_aws import process_aws
+
 import pathlib
 import pandas as pd
 import re
 from pytimeparse.timeparse import timeparse
-from threading import Thread
+
 import sys
 
 
@@ -74,6 +74,7 @@ def download_file(args):
         process_dsa(temp_output, output_path, timestamp)
 
     if provider == 'AWS':
+
         # Get channel os AWS
         channel = os.getenv('c')
         interval = timeparse(os.getenv('i'))
@@ -152,47 +153,4 @@ def download_file(args):
         # Reset index
         frame_df = frame_df.reset_index()
 
-        # for row of frame
-        for index, row in frame_df.iterrows():
-            # row values to tuple
-            args = (output_path,  # output
-                    row['timestamp'],  # timestamp
-                    row['url'],  # url
-                    row['c_scan'],  # timestamp
-                    row['s_scan'],  # timestamp
-                    )
-
-            # # Add row.values to Thread
-            # thread_aws = Thread(target=download_aws, args=(args,))
-            # thread_aws.start()
-            download_aws(args)
-
-
-def download_aws(args):
-    # Get args
-    output_path, timestamp, url, c_scan, s_scan = args
-
-    # Output temp file
-    temp_output = './temp/' + timestamp.strftime('%Y%m%d_%H%M%S.nc')
-
-    # Status
-    attempts = 0
-
-    print(timestamp, '->', url)
-
-    # print(f'Downloading {provider} {s_scan}')
-
-    # Try download while file size is not equal to 0
-    while attempts <= 5:
-        try:
-            # Download file
-            os.system('wget --quiet --show-progress -cO - ' + url + ' > ' + temp_output)
-            attempts = 6
-        except:
-            attempts += 1
-            # Write in logfile
-            print('\nError downloading file: ', timestamp, '\nFrom :', url)
-            return 0
-
-    # Call process aws
-    process_aws(temp_output, output_path, timestamp, c_scan, s_scan)
+        return frame_df
