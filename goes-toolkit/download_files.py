@@ -9,6 +9,7 @@ import pandas as pd
 import re
 from pytimeparse.timeparse import timeparse
 from threading import Thread
+import sys
 
 
 def download_file(args):
@@ -125,6 +126,15 @@ def download_file(args):
 
         # Filter channel
         frame_df = frame_df[(frame_df['url'].str.contains(search_strings))]
+
+        # Check if frame_df
+        if frame_df.empty:
+            # Write in logfile
+            print('\nError downloading file: ', timestamp, '\nFrom :', url)
+            # Write file at './logs/+output_file+'
+            with open('./logs/' + str(timestamp.strftime('%Y%m%d_%H%M%S')) + '.file_not_found.log', 'w') as f:
+                f.write(str(sys.exc_info()))
+            return None
 
         # Set s_scan as index
         frame_df = frame_df.set_index('timestamp')
