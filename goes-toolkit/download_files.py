@@ -47,7 +47,7 @@ def download_file(args):
 
     # Check provider
     if provider == 'NOAA':
-        # print('\n\nDownloading file: ', timestamp, '\nFrom :', url)
+        print('\n\nDownloading file: ', timestamp, '\nFrom :', url)
 
         # Output temp file
         temp_output = './temp/' + timestamp.strftime('%Y%m%d_%H%M%S.nc')

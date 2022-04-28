@@ -48,7 +48,7 @@ def process_files():
 
     # Create a pool of processes
     parallel_processes = multiprocessing.cpu_count() - 1
-    parallel_processes = 4
+    parallel_processes = 8
     pool = multiprocessing.Pool(parallel_processes)
     interval = timeparse(os.getenv('i'))
     between_times = list(map(str, os.getenv("bt").split(",")))

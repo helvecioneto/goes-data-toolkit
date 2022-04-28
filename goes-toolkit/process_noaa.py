@@ -34,8 +34,6 @@ def process_noaa(temp_dir, output, timestamp):
 
         # Read the header metadata
         metadata = img.GetMetadata()
-        scale = float(metadata.get(var_name + '#scale_factor'))
-        undef = float(metadata.get(var_name + '#_FillValue'))
         # long_name
         long_name = metadata.get(var_name + '#long_name')
         # coordinates
@@ -47,9 +45,9 @@ def process_noaa(temp_dir, output, timestamp):
         # add_offset
         add_offset = metadata.get(var_name + '#add_offset')
         # valid_range
-        valid_range = metadata.get(var_name + '#valid_range')
+        valid_range = metadata.get(var_name + '#valid_range').replace("{", "").replace("}", "").split(",")
         # actual_range
-        actual_range = metadata.get(var_name + '#actual_range')
+        actual_range = metadata.get(var_name + '#actual_range').replace("{", "").replace("}", "").split(",")
         # missing_value
         missing_value = metadata.get(var_name + '#missing_value')
         # _FillValue
@@ -96,24 +94,21 @@ def process_noaa(temp_dir, output, timestamp):
         ds = img.ReadAsArray(0, 0, img.RasterXSize, img.RasterYSize)
 
         # Filter values undef
-        ds[ds == undef] = 0
+        # ds[ds == undef] = 0
 
         # Apply the scale, offset
-        ds = ds * scale * 1000
+        # ds = ds * scale * 1000
 
         # Get zenith angle
-        zenith = get_zenith(satlat_value, satlon_value, timestamp, julian_day)
+        #zenith = get_zenith(satlat_value, satlon_value, timestamp, julian_day)
 
         # Apply zenith angle to get the irradiance
-        ds = ds / np.cos(zenith)
-
-        # Convert to int
-        ds = ds.astype(int)
+        #ds = ds / np.cos(zenith)
 
         # Apply scale, offset, and undef
         GeoT = img.GetGeoTransform()
         driver = gdal.GetDriverByName('netCDF')
-        raw = driver.Create(temp_dir, ds.shape[1], ds.shape[0], 1, gdal.GDT_Int32)
+        raw = driver.Create(temp_dir, ds.shape[1], ds.shape[0], 1, gdal.GDT_Int16)
         raw.SetGeoTransform(GeoT)
         raw.GetRasterBand(1).WriteArray(ds)
         # Close the file
@@ -122,7 +117,7 @@ def process_noaa(temp_dir, output, timestamp):
         # Define the parameters of the output cropped image
         kwargs = {'format': 'netCDF',
                   'outputBounds': (bbox[0], bbox[3], bbox[2], bbox[1]),
-                  'outputType': gdal.GDT_Int32,
+                  'outputType': gdal.GDT_Int16,
                   }
 
         # Write the reprojected file on disk
@@ -133,6 +128,14 @@ def process_noaa(temp_dir, output, timestamp):
         os.system("ncatted -O -a long_name," + var_name + ",o,c,\""+str(long_name)+"\" "+str(temp_dir))
         os.system("ncatted -O -a coordinates," + var_name + ",o,c,\""+str(coordinates)+"\" "+str(temp_dir))
         os.system("ncatted -O -a units," + var_name + ",o,c,\""+str(units)+"\" "+str(temp_dir))
+        os.system("ncatted -O -a scale_factor," + var_name + ",o,f,\""+str(scale_factor)+"\" "+str(temp_dir))
+        os.system("ncatted -O -a add_offset," + var_name + ",o,f,\""+str(add_offset)+"\" "+str(temp_dir))
+        os.system("ncatted -O -a valid_range," + var_name + ",o,s,\""+str(valid_range[0])+","+str(valid_range[1])+"\" "+str(temp_dir))
+        os.system("ncatted -O -a actual_range," + var_name + ",o,f,\""+str(actual_range[0])+","+str(actual_range[1])+"\" "+str(temp_dir))
+        os.system("ncatted -O -a missing_value," + var_name + ",o,s,\""+str(missing_value)+"\" "+str(temp_dir))
+        os.system("ncatted -O -a _FillValue," + var_name + ",o,s,\""+str(_FillValue)+"\" "+str(temp_dir))
+        os.system("ncatted -O -a coverage_content_type," + var_name + ",o,c,\""+str(coverage_content_type)+"\" "+str(temp_dir))
+        os.system("ncatted -O -a comment," + var_name + ",o,c,\""+str(comment)+"\" "+str(temp_dir))
 
         # Add global attributes
         os.system("ncatted -O -a processed,global,o,c,\" by: Helvecio B. L. Neto (helvecioblneto@gmail.com)\" "+str(temp_dir))
