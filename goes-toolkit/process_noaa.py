@@ -86,7 +86,7 @@ def process_noaa(temp_dir, output, timestamp):
         # Transform timestamp to hour of day and minute of hour
         hour_of_day = timestamp.strftime('%H')
         minute_of_hour = timestamp.strftime('%M')
-        time_of_day = int(hour_of_day + minute_of_hour)
+        time_of_day = str(hour_of_day + minute_of_hour)
 
         ####################### PROCESSING ##############################
 
