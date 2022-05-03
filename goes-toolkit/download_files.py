@@ -3,6 +3,7 @@ import os
 import s3fs
 from process_noaa import process_noaa
 from process_dsa import process_dsa
+from process_dsa16 import process_dsa16
 
 import pathlib
 import pandas as pd
@@ -17,13 +18,37 @@ def download_file(args):
     global provider
 
     """Download file from the server"""
-    url, provider, timestamp, output_path = args
+    url, provider, timestamp, output_path, satelite = args
 
     if url == None:
         return
 
     # Check provider
-    if provider == 'DSA':
+    if provider == 'DSA' and satelite == 'goes16':
+        print(f'Downloading {provider} {timestamp}', ' from url: ', url)
+        # Output temp file
+        temp_output = './temp/' + timestamp.strftime('%Y%m%d_%H%M%S.nc')
+
+        # Status
+        attempts = 0
+
+        # Try download while file size is not equal to 0
+        while attempts <= 5:
+            try:
+                # Download file
+                os.system('wget --quiet --show-progress -cO - ' + url + ' > ' + temp_output)
+                attempts = 6
+            except:
+                attempts += 1
+                # Write in logfile
+                print('\nError downloading file: ', timestamp, '\nFrom :', url)
+                return 0
+
+        # Process files
+        process_dsa16(temp_output, output_path, timestamp)
+
+    # Check provider
+    if provider == 'DSA' and satelite == 'goes13':
         # print('\n\nDownloading file: ', url)
         print(f'Downloading {provider} {timestamp}', ' from url: ', url)
 
@@ -47,7 +72,7 @@ def download_file(args):
 
     # Check provider
     if provider == 'NOAA':
-        print('\n\nDownloading file: ', timestamp, '\nFrom :', url)
+        # print('\n\nDownloading file: ', timestamp, '\nFrom :', url)
 
         # Output temp file
         temp_output = './temp/' + timestamp.strftime('%Y%m%d_%H%M%S.nc')
@@ -70,7 +95,7 @@ def download_file(args):
         # Begin processing
         process_noaa(temp_output, output_path, timestamp)
 
-    if provider == 'DSA':
+    if provider == 'DSA' and satelite == 'goes13':
         process_dsa(temp_output, output_path, timestamp)
 
     if provider == 'AWS':

@@ -107,7 +107,8 @@ def main():
         type=str,
         metavar='',
         help="Bounding box in format min_lon,min_lat,max_lon,max_lat",
-        default="-40.48,-9.48,-34.6,-5.52",
+        # default="-40.48,-9.48,-34.6,-5.52", # Paraiba
+        default="-49.649963,-2.287295,-47.161560,-0.340574",  # Belém
         required=False,
     )
 

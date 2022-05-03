@@ -24,6 +24,7 @@ def process_files():
     # Get parameters
     provider = os.getenv('p')
     output = os.getenv('o') + '/' + provider
+    satelite = os.getenv('sat')
 
     # Check if output dir exist
     if not os.path.exists(output):
@@ -48,7 +49,7 @@ def process_files():
 
     # Create a pool of processes
     parallel_processes = multiprocessing.cpu_count() - 1
-    parallel_processes = 8
+    parallel_processes = 10
     pool = multiprocessing.Pool(parallel_processes)
     interval = timeparse(os.getenv('i'))
     between_times = list(map(str, os.getenv("bt").split(",")))
@@ -57,88 +58,88 @@ def process_files():
     main_aws_df = pd.DataFrame()
 
     # Check if provider is AWS
-    if provider == 'AWS':
+    if provider != 'AWS':
         print('Mount AWS Files Frame...')
 
-    # Process files
-    for idx in range(0, len(filtered_df.index), parallel_processes):
-
-        # for parallel download
-        args = []
-        for i in range(parallel_processes):
-            if idx + i < len(filtered_df.index):
-                args.append((filtered_df.iloc[idx + i]['url'],
-                             filtered_df.iloc[idx + i]['provider'],
-                             filtered_df.iloc[idx + i]['timestamp'],
-                            output))
-
-        # Download files
-        flags = pool.map(download_file, args)
-
-        # Check if is AWS
-        if provider == 'AWS':
-            for flag in flags:
-                # Append to main AWS df
-                main_aws_df = pd.concat([main_aws_df, flag])
-        else:
-            # Check if flags are 0
-            for flag in flags:
-                if flag == 0:
-                    logging.info(f'Error downloading file: {filtered_df.iloc[idx + i]["timestamp"]}')
-                    continue
-                elif flag == 1:
-                    logging.info(f'Downloaded file: {filtered_df.iloc[idx + i]["timestamp"]}')
-                    continue
-
-    # Check if provider is AWS
-    if provider == 'AWS':
-        print('\nProcessing AWS Files...')
-
-        # Keep duplicates first in column timestamp
-        main_aws_df = main_aws_df.sort_values(by=['timestamp'], ascending=True).drop_duplicates(subset=['timestamp'], keep='first')
-
-        # Add provider column to main_aws_df
-        main_aws_df['provider'] = 'AWS'
-
-        # Set s_scan as index
-        main_aws_df = main_aws_df.set_index('timestamp')
-
-        # Group
-        # Lock by timedelta frequency at interval seconds
-        main_aws_df = main_aws_df.groupby(pd.Grouper(freq=str(interval) + 's')).first()
-
-        # Ignore times between midnight and 6am at guid_df index timestamp
-        if between_times[0] != 'None':
-            between_times = [pd.to_datetime(tm).strftime('%H:%M:%S') for tm in between_times]
-            # Lock by between_times at index of guide_df
-            main_aws_df = main_aws_df.between_time(between_times[0], between_times[1])
-
-        # Reset index
-        main_aws_df = main_aws_df.reset_index()
-
         # Process files
-        for idx in range(0, len(main_aws_df.index), parallel_processes):
+        for idx in range(0, len(filtered_df.index), parallel_processes):
 
             # for parallel download
             args = []
             for i in range(parallel_processes):
-                if idx + i < len(main_aws_df.index):
-                    args.append((main_aws_df.iloc[idx + i]['url'],
-                                 main_aws_df.iloc[idx + i]['provider'],
-                                 main_aws_df.iloc[idx + i]['timestamp'],
-                                 output))
+                if idx + i < len(filtered_df.index):
+                    args.append((filtered_df.iloc[idx + i]['url'],
+                                filtered_df.iloc[idx + i]['provider'],
+                                filtered_df.iloc[idx + i]['timestamp'],
+                                output, satelite))
 
             # Download files
-            aws_download_parallel = pool.map(download_aws, args)
+            flags = pool.map(download_file, args)
+
+            # Check if is AWS
+            if provider == 'AWS':
+                for flag in flags:
+                    # Append to main AWS df
+                    main_aws_df = pd.concat([main_aws_df, flag])
+            else:
+                # Check if flags are 0
+                for flag in flags:
+                    if flag == 0:
+                        logging.info(f'Error downloading file: {filtered_df.iloc[idx + i]["timestamp"]}')
+                        continue
+                    elif flag == 1:
+                        logging.info(f'Downloaded file: {filtered_df.iloc[idx + i]["timestamp"]}')
+                        continue
+
+        # Check if provider is AWS
+        if provider == 'AWS':
+            print('\nProcessing AWS Files...')
+
+            # Keep duplicates first in column timestamp
+            main_aws_df = main_aws_df.sort_values(by=['timestamp'], ascending=True).drop_duplicates(subset=['timestamp'], keep='first')
+
+            # Add provider column to main_aws_df
+            main_aws_df['provider'] = 'AWS'
+
+            # Set s_scan as index
+            main_aws_df = main_aws_df.set_index('timestamp')
+
+            # Group
+            # Lock by timedelta frequency at interval seconds
+            main_aws_df = main_aws_df.groupby(pd.Grouper(freq=str(interval) + 's')).first()
+
+            # Ignore times between midnight and 6am at guid_df index timestamp
+            if between_times[0] != 'None':
+                between_times = [pd.to_datetime(tm).strftime('%H:%M:%S') for tm in between_times]
+                # Lock by between_times at index of guide_df
+                main_aws_df = main_aws_df.between_time(between_times[0], between_times[1])
+
+            # Reset index
+            main_aws_df = main_aws_df.reset_index()
 
             # Process files
-            for aws_download in aws_download_parallel:
-                print('Processing file: ' + str(aws_download[2]))
-                if aws_download[0] == 0:
-                    logging.info(f'Error downloading file: {aws_download[2]}')
-                    continue
-                else:
-                    process_aws(aws_download[0], aws_download[1], aws_download[2])
+            for idx in range(0, len(main_aws_df.index), parallel_processes):
+
+                # for parallel download
+                args = []
+                for i in range(parallel_processes):
+                    if idx + i < len(main_aws_df.index):
+                        args.append((main_aws_df.iloc[idx + i]['url'],
+                                    main_aws_df.iloc[idx + i]['provider'],
+                                    main_aws_df.iloc[idx + i]['timestamp'],
+                                    output))
+
+                # Download files
+                aws_download_parallel = pool.map(download_aws, args)
+
+                # Process files
+                for aws_download in aws_download_parallel:
+                    print('Processing file: ' + str(aws_download[2]))
+                    if aws_download[0] == 0:
+                        logging.info(f'Error downloading file: {aws_download[2]}')
+                        continue
+                    else:
+                        process_aws(aws_download[0], aws_download[1], aws_download[2])
 
 
 def download_aws(args):

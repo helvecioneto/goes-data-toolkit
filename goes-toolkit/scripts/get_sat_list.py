@@ -21,6 +21,83 @@ def get_dsa_goes13_list():
             thread.start()
 
 
+def get_dsa_goes16_list():
+    """
+    Get the list of satellites from the NGDC website.
+    """
+
+    url = 'http://ftp.cptec.inpe.br/goes/goes16/retangular/'
+    response = requests.get(url)
+
+    for channels in response.text.split('\n'):
+        if channels.startswith('<tr><td valign="top">') and '/goes/goes16/' not in channels:
+            channel = channels.split('"')[7]
+            thread = Thread(target=get_channels_dsa16, args=((url, channel),))
+            thread.start()
+
+
+def get_channels_dsa16(args):
+    """
+    Get the list of channels in the directory.
+    """
+
+    url, channel = args
+
+    response = requests.get(url + channel)
+    for years in response.text.split('\n'):
+        if years.startswith('<tr><td valign="top">') and '/goes/goes16/' not in years:
+            year = years.split('"')[7]
+            response = requests.get(url+channel+year)
+            thread = Thread(target=get_years_dsa16, args=((url, channel, year),))
+            thread.start()
+
+
+def get_years_dsa16(args):
+    url, channel, year = args
+
+    response = requests.get(url + channel + year)
+    for months in response.text.split('\n'):
+        if months.startswith('<tr><td valign="top">') and '/goes/goes16/' not in months:
+            month = months.split('"')[7]
+            thread = Thread(target=get_files_dsa16, args=((url, channel, year, month),))
+            thread.start()
+
+
+def get_files_dsa16(args):
+
+    output_df = pd.DataFrame()
+
+    url_list, channel_list, year_list, month_list, file_list = [], [], [], [], []
+
+    url, channel, year, month = args
+
+    response = requests.get(url + channel + year + month)
+    for file in response.text.split('\n'):
+        if file.startswith('<tr><td valign="top">') and '/goes/goes16/' not in file:
+            file = file.split('"')[7]
+            # Append the file to the list
+            file_list.append(file)
+            # Append the year to the list
+            year_list.append(year)
+            # Append the month to the list
+            month_list.append(month)
+            # Append the url to the list
+            url_list.append(url + channel + year + month + file)
+            # Append channel to the list
+            channel_list.append(channel)
+
+    # Create a dataframe
+    output_df['year'] = year_list
+    output_df['month'] = month_list
+    output_df['file'] = file_list
+    output_df['url'] = url_list
+    output_df['provider'] = 'DSA'
+    output_df['channel'] = channel_list
+
+    # Write the dataframe to a csv file
+    output_df.to_csv('files/dsa/dsa_'+channel[:-1]+'_'+year[:-1]+'_'+month[:-1]+'.csv', index=False)
+
+
 def get_channels_dsa(args):
     """
     Get the list of channels in the directory.
@@ -197,6 +274,7 @@ def merge_all_files():
     Merge all the csv files in the directory.
     """
     noaa_df = pd.DataFrame()
+    print('Mergin NOAA FILES')
 
     for file in os.listdir('files/noaa/'):
         if file.endswith('.csv'):
@@ -208,11 +286,12 @@ def merge_all_files():
     noaa_df['timestamp'] = noaa_df.file.str.extract(r"[.](?P<timestamp>\d+.\d+.\d+.\d+)", expand=False).apply(pd.to_datetime)
     noaa_df['sat'] = noaa_df.file.str.extract(r"[.](?P<sat>\w+)", expand=False)
 
+    print('Mergin DSA GOES13 FILES')
     dsa_df_goes13 = pd.DataFrame()
 
-    for file in os.listdir('files/dsa/'):
+    for file in os.listdir('files/dsa_goes13/'):
         if file.endswith('.csv'):
-            df = pd.read_csv('files/dsa/'+file)
+            df = pd.read_csv('files/dsa_goes13/'+file)
             # Concatenate the dataframe
             dsa_df_goes13 = pd.concat([dsa_df_goes13, df])
 
@@ -220,6 +299,20 @@ def merge_all_files():
     dsa_df_goes13['channel'] = dsa_df_goes13.channel.str.extract(r"[ch](?P<timestamp>\d)", expand=False).astype(int)
     dsa_df_goes13['sat'] = 'goes13'
 
+    print('Mergin DSA GOES16 FILES')
+    dsa_df_goes16 = pd.DataFrame()
+
+    for file in os.listdir('files/dsa/'):
+        if file.endswith('.csv'):
+            df = pd.read_csv('files/dsa/'+file)
+            # Concatenate the dataframe
+            dsa_df_goes16 = pd.concat([dsa_df_goes16, df])
+
+    dsa_df_goes16['timestamp'] = dsa_df_goes16.file.str.extract(r"[_](?P<timestamp>\d+.\d+.\d+.\d+)", expand=False).apply(pd.to_datetime)
+    dsa_df_goes16['channel'] = dsa_df_goes16.channel.str.extract(r"[ch](?P<timestamp>\d+)", expand=False).astype(int)
+    dsa_df_goes16['sat'] = 'goes16'
+
+    print('Mergin AWS FILES')
     # AWS S3 DF
     aws_df = pd.DataFrame()
 
@@ -231,7 +324,7 @@ def merge_all_files():
             aws_df = pd.concat([aws_df, df])
 
     # Concat dsa and noaa dataframes
-    output_df = pd.concat([dsa_df_goes13, noaa_df, aws_df])
+    output_df = pd.concat([dsa_df_goes13, noaa_df, aws_df, dsa_df_goes16])
 
     # Drop columns year, month and file
     output_df = output_df.drop(['year', 'month', 'file'], axis=1)
@@ -263,12 +356,12 @@ if __name__ == '__main__':
     # get_dsa_goes13_list()
     # print('DSA list data downloaded!')
 
-    print('Getting the list Data in AWS...')
-    get_aws_goes16()
-    print('AWS list data downloaded!')
+    # print('Getting the list Data in AWS...')
+    # get_dsa_goes16_list()
+    # print('AWS list data downloaded!')
 
-    # print('Merging all the csv files...')
-    # merge_all_files()
+    print('Merging all the csv files...')
+    merge_all_files()
 
     # # Delete directory files
     # os.system('rm -rf files')
