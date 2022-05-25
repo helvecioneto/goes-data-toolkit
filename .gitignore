@@ -6,8 +6,9 @@ __pycache__/
 # Dir
 output/
 temp/
+docs/
 log/
-log_goes16/
+logs_goes16/
 goes-toolkit/scripts/files/
 goes-toolkit/scripts/testes/
 
