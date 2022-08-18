@@ -1,5 +1,6 @@
-name: goes-data-toolkit
+name: goes-data
 channels:
+  - conda-forge
   - defaults
 dependencies:
   - _libgcc_mutex=0.1=main
@@ -20,15 +21,19 @@ dependencies:
   - brotlipy=0.7.0=py39h27cfd23_1003
   - bzip2=1.0.8=h7b6447c_0
   - c-ares=1.18.1=h7f8727e_0
-  - ca-certificates=2022.2.1=h06a4308_0
+  - ca-certificates=2022.6.15=ha878542_0
+  - cached-property=1.5.2=hd8ed1ab_1
+  - cached_property=1.5.2=pyha770c72_1
   - cairo=1.16.0=hf32fb01_1
-  - certifi=2021.10.8=py39h06a4308_2
+  - certifi=2022.6.15=py39hf3d152e_0
   - cffi=1.15.0=py39hd667e15_1
   - cfitsio=3.470=hf0d0db6_6
   - cftime=1.5.1.1=py39hce1f21e_0
   - charset-normalizer=2.0.4=pyhd3eb1b0_0
   - cryptography=36.0.0=py39h9ce1e76_0
   - curl=7.80.0=h7f8727e_0
+  - dataclasses=0.8=pyhc8e2a94_3
+  - ephem=4.1.2=py39h7f8727e_0
   - expat=2.4.4=h295c915_0
   - fontconfig=2.13.1=h6c09931_0
   - freetype=2.11.0=h70c0345_0
@@ -40,6 +45,7 @@ dependencies:
   - geotiff=1.7.0=hd69d5b1_0
   - giflib=5.2.1=h7b6447c_0
   - glib=2.69.1=h4ff587b_1
+  - h5py=3.1.0=nompi_py39h25020de_100
   - hdf4=4.2.13=h3ca952b_2
   - hdf5=1.10.6=hb1b8bf9_0
   - icu=58.2=he6710b0_3
@@ -63,6 +69,7 @@ dependencies:
   - libgfortran4=7.5.0=ha8ba4b0_17
   - libgomp=9.3.0=h5101ec6_17
   - libkml=1.3.0=h7ecb851_5
+  - libllvm11=11.1.0=hf817b99_2
   - libnetcdf=4.8.1=h42ceab0_1
   - libnghttp2=1.46.0=hce63b2e_0
   - libpng=1.6.37=hbc83047_0
@@ -76,6 +83,7 @@ dependencies:
   - libxcb=1.14=h7b6447c_0
   - libxml2=2.9.12=h03d6c58_0
   - libzip=1.5.1=h8d318fa_1003
+  - llvmlite=0.38.0=py39h4ff587b_0
   - lz4-c=1.9.3=h295c915_1
   - mkl=2021.4.0=h06a4308_640
   - mkl-service=2.4.0=py39h7f8727e_0
@@ -84,32 +92,40 @@ dependencies:
   - multidict=5.2.0=py39h7f8727e_2
   - ncurses=6.3=h7f8727e_2
   - netcdf4=1.5.7=py39ha0f2276_1
+  - numba=0.55.1=py39h51133e4_0
   - numexpr=2.8.1=py39h6abb31d_0
   - numpy=1.21.2=py39h20f2e39_0
   - numpy-base=1.21.2=py39h79a1101_0
   - openjpeg=2.4.0=h3ad879b_0
-  - openssl=1.1.1m=h7f8727e_0
+  - openssl=1.1.1q=h7f8727e_0
   - packaging=21.3=pyhd3eb1b0_0
   - pandas=1.4.1=py39h295c915_0
+  - patsy=0.5.2=pyhd8ed1ab_0
   - pcre=8.45=h295c915_0
   - pip=21.2.4=py39h06a4308_0
   - pixman=0.40.0=h7f8727e_1
   - poppler=0.81.0=h01f5e8b_2
   - poppler-data=0.4.11=h06a4308_0
   - proj=6.2.1=h05a3930_0
+  - pvlib-python=0.9.1=pyhd8ed1ab_0
   - pycparser=2.21=pyhd3eb1b0_0
   - pyopenssl=22.0.0=pyhd3eb1b0_0
   - pyparsing=3.0.4=pyhd3eb1b0_0
   - pysocks=1.7.1=py39h06a4308_0
   - python=3.9.7=h12debd9_1
   - python-dateutil=2.8.2=pyhd3eb1b0_0
+  - python_abi=3.9=2_cp39
   - pytimeparse=1.1.8=py39h06a4308_0
   - pytz=2021.3=pyhd3eb1b0_0
   - readline=8.1.2=h7f8727e_1
+  - requests=2.28.1=pyhd8ed1ab_0
   - s3fs=2022.1.0=pyhd3eb1b0_0
+  - scipy=1.7.3=py39hc147768_0
   - setuptools=58.0.4=py39h06a4308_0
   - six=1.16.0=pyhd3eb1b0_1
   - sqlite=3.38.0=hc218d9a_0
+  - statsmodels=0.13.2=py39h7f8727e_0
+  - tbb=2021.5.0=hd09550d_0
   - tiledb=2.2.9=hffe1d7a_0
   - tk=8.6.11=h1ccaba5_0
   - typing-extensions=3.10.0.2=hd3eb1b0_0
@@ -123,4 +139,4 @@ dependencies:
   - yarl=1.6.3=py39h27cfd23_0
   - zlib=1.2.11=h7f8727e_4
   - zstd=1.4.9=haebb681_0
-prefix: /home/helvecioneto/miniconda3/envs/goes-data-toolkit
+prefix: /home/helvecio/miniconda3/envs/goes-data
