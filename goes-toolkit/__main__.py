@@ -107,8 +107,9 @@ def main():
         type=str,
         metavar='',
         help="Bounding box in format min_lon,min_lat,max_lon,max_lat",
-        default="-81.400000,-35.000000,-30.000000,12.600000", # ATLAS
-        default="-40.48,-9.48,-34.6,-5.52",  # Paraiba
+        default="-74.000000,-35.000000,-30.000000,8.000000", # ATLAS NOVO
+        # default="-81.400000,-35.000000,-30.000000,12.600000", # ATLAS OLD
+        # default="-40.48,-9.48,-34.6,-5.52",  # Paraiba
         # default="-50.899658,-2.040279,-43.549805,2.284551",  # Belém
         required=False,
     )

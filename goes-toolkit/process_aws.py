@@ -48,7 +48,9 @@ def process_aws(temp_output, output, timestamp):
         # add_offset
         add_offset = metadata.get(var_name + '#add_offset')
         # valid_range
-        valid_range = metadata.get(var_name + '#valid_range')
+        valid_range = metadata.get(var_name + '#valid_range').split(',')
+        # Remove {} from valid_range
+        valid_range = [int(valid_range[0].replace('{', '')), int(valid_range[-1].replace('}', ''))]
         # _FillValue
         _FillValue = metadata.get(var_name + '#_FillValue')
 
@@ -92,9 +94,8 @@ def process_aws(temp_output, output, timestamp):
         os.system("ncatted -O -a units," + var_name + ",o,f,\""+str(units)+"\" "+str(temp_output))
         os.system("ncatted -O -a scale_factor," + var_name + ",o,f,\""+str(scale_factor)+"\" "+str(temp_output))
         os.system("ncatted -O -a add_offset," + var_name + ",o,f,\""+str(add_offset)+"\" "+str(temp_output))
-        os.system("ncatted -O -a valid_range," + var_name + ",o,c,\""+str(valid_range)+"\" "+str(temp_output))
+        os.system("ncatted -a valid_range," + var_name + ",mode,f,\""+str(valid_range[0])+","+str(valid_range[1])+"\" "+str(temp_output))
         os.system("ncatted -O -a _FillValue," + var_name + ",o,s,\""+str(_FillValue)+"\" "+str(temp_output))
-
         # Add global attributes
         os.system("ncatted -O -a processed,global,o,c,\" by: Helvecio B. L. Neto (helvecioblneto@gmail.com)\" "+str(temp_output))
 

@@ -241,11 +241,12 @@ def get_aws_goes16():
 
     # Seting the bucket
     server = 'noaa-goes16/'
-    products = ['ABI-L1b-RadC/', 'ABI-L2-CMIPF/']
+    #products = ['ABI-L1b-RadC/', 'ABI-L2-CMIPF/']
+    products = ['ABI-L2-CMIPF/']
 
     # Create pandas date_range init 2017 and end current date with freq='1H'
     date_range = pd.date_range(start='2017-01-01',
-                               end=datetime.date.today(), freq='1H')
+                               end=datetime.date.today(), freq='15min')
 
     # for each produt in products
     for product in products:
@@ -263,10 +264,8 @@ def get_aws_goes16():
     output_df['file'] = None
     output_df['sat'] = 'goes16'
 
-    print(date_range)
-
     # Write the dataframe to a csv file
-    # output_df.to_csv('files/aws/aws_goes16.csv', index=False)
+    output_df.to_csv('files/aws/aws_goes16.csv', index=False)
 
 
 def merge_all_files():
@@ -275,59 +274,73 @@ def merge_all_files():
     """
     noaa_df = pd.DataFrame()
     print('Mergin NOAA FILES')
+    try:
+        for file in os.listdir('files/noaa/'):
+            if file.endswith('.csv'):
+                df = pd.read_csv('files/noaa/'+file)
+                # Concatenate the dataframe
+                noaa_df = pd.concat([noaa_df, df])
 
-    for file in os.listdir('files/noaa/'):
-        if file.endswith('.csv'):
-            df = pd.read_csv('files/noaa/'+file)
-            # Concatenate the dataframe
-            noaa_df = pd.concat([noaa_df, df])
-
-    # Processing file guid
-    noaa_df['timestamp'] = noaa_df.file.str.extract(r"[.](?P<timestamp>\d+.\d+.\d+.\d+)", expand=False).apply(pd.to_datetime)
-    noaa_df['sat'] = noaa_df.file.str.extract(r"[.](?P<sat>\w+)", expand=False)
+        # Processing file guid
+        noaa_df['timestamp'] = noaa_df.file.str.extract(r"[.](?P<timestamp>\d+.\d+.\d+.\d+)", expand=False).apply(pd.to_datetime)
+        noaa_df['sat'] = noaa_df.file.str.extract(r"[.](?P<sat>\w+)", expand=False)
+    except:
+        pass
 
     print('Mergin DSA GOES13 FILES')
-    dsa_df_goes13 = pd.DataFrame()
+    try:
+        dsa_df_goes13 = pd.DataFrame()
 
-    for file in os.listdir('files/dsa_goes13/'):
-        if file.endswith('.csv'):
-            df = pd.read_csv('files/dsa_goes13/'+file)
-            # Concatenate the dataframe
-            dsa_df_goes13 = pd.concat([dsa_df_goes13, df])
+        for file in os.listdir('files/dsa_goes13/'):
+            if file.endswith('.csv'):
+                df = pd.read_csv('files/dsa_goes13/'+file)
+                # Concatenate the dataframe
+                dsa_df_goes13 = pd.concat([dsa_df_goes13, df])
 
-    dsa_df_goes13['timestamp'] = dsa_df_goes13.file.str.extract(r"[_](?P<timestamp>\d+.\d+.\d+.\d+)", expand=False).apply(pd.to_datetime)
-    dsa_df_goes13['channel'] = dsa_df_goes13.channel.str.extract(r"[ch](?P<timestamp>\d)", expand=False).astype(int)
-    dsa_df_goes13['sat'] = 'goes13'
+        dsa_df_goes13['timestamp'] = dsa_df_goes13.file.str.extract(r"[_](?P<timestamp>\d+.\d+.\d+.\d+)", expand=False).apply(pd.to_datetime)
+        dsa_df_goes13['channel'] = dsa_df_goes13.channel.str.extract(r"[ch](?P<timestamp>\d)", expand=False).astype(int)
+        dsa_df_goes13['sat'] = 'goes13'
+    except:
+        pass
 
     print('Mergin DSA GOES16 FILES')
     dsa_df_goes16 = pd.DataFrame()
+    try:
 
-    for file in os.listdir('files/dsa/'):
-        if file.endswith('.csv'):
-            df = pd.read_csv('files/dsa/'+file)
-            # Concatenate the dataframe
-            dsa_df_goes16 = pd.concat([dsa_df_goes16, df])
+        for file in os.listdir('files/dsa/'):
+            if file.endswith('.csv'):
+                df = pd.read_csv('files/dsa/'+file)
+                # Concatenate the dataframe
+                dsa_df_goes16 = pd.concat([dsa_df_goes16, df])
 
-    dsa_df_goes16['timestamp'] = dsa_df_goes16.file.str.extract(r"[_](?P<timestamp>\d+.\d+.\d+.\d+)", expand=False).apply(pd.to_datetime)
-    dsa_df_goes16['channel'] = dsa_df_goes16.channel.str.extract(r"[ch](?P<timestamp>\d+)", expand=False).astype(int)
-    dsa_df_goes16['sat'] = 'goes16'
+        dsa_df_goes16['timestamp'] = dsa_df_goes16.file.str.extract(r"[_](?P<timestamp>\d+.\d+.\d+.\d+)", expand=False).apply(pd.to_datetime)
+        dsa_df_goes16['channel'] = dsa_df_goes16.channel.str.extract(r"[ch](?P<timestamp>\d+)", expand=False).astype(int)
+        dsa_df_goes16['sat'] = 'goes16'
+    except:
+        pass
 
     print('Mergin AWS FILES')
     # AWS S3 DF
     aws_df = pd.DataFrame()
+    try:
 
-    # Read the csv files
-    for file in os.listdir('files/aws/'):
-        if file.endswith('.csv'):
-            df = pd.read_csv('files/aws/'+file)
-            # Concatenate the dataframe
-            aws_df = pd.concat([aws_df, df])
+        # Read the csv files
+        for file in os.listdir('files/aws/'):
+            if file.endswith('.csv'):
+                df = pd.read_csv('files/aws/'+file)
+                # Concatenate the dataframe
+                aws_df = pd.concat([aws_df, df])
+    except:
+        pass
 
     # Concat dsa and noaa dataframes
     output_df = pd.concat([dsa_df_goes13, noaa_df, aws_df, dsa_df_goes16])
 
-    # Drop columns year, month and file
-    output_df = output_df.drop(['year', 'month', 'file'], axis=1)
+    try:
+        # Drop columns year, month and file
+        output_df = output_df.drop(['year', 'month', 'file'], axis=1)
+    except:
+        pass
 
     # Set index
     output_df = output_df.set_index('timestamp')
@@ -354,12 +367,13 @@ if __name__ == '__main__':
 
     # print('Getting the list Data in DSA...')
     # get_dsa_goes13_list()
+    # get_dsa_goes16_list()
     # print('DSA list data downloaded!')
 
-    # print('Getting the list Data in AWS...')
-    # get_dsa_goes16_list()
-    # print('AWS list data downloaded!')
+    print('Getting the list Data in AWS...')
 
+    print('AWS list data downloaded!')
+    get_aws_goes16()
     print('Merging all the csv files...')
     merge_all_files()
 
