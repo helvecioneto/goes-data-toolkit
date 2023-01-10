@@ -20,7 +20,7 @@ def main():
         prefix_chars="**-",
         epilog=__init__.__program_name__ + "-v1.0",
         usage=__init__.__program_name__
-        + "\npython goes-toolkit -s '2020-06-06 08:00' -e '2020-06-06 22:00' -bt '09:00,22:00' -i 30min -sat goes16 -c 02 -p AWS download\n"
+        + "\npython goes-toolkit -s '2020-06-06 08:00' -e '2020-06-06 22:00' -bt '09:00,22:00' -i 10min -sat goes16 -c 02 -p AWS download\n"
         "\nor type '%(prog)s -h' for more information.\n ",
         description="Global parameters",
     )
@@ -60,7 +60,7 @@ def main():
         type=str,
         metavar='',
         help="Interval in format. Ex: 30min, 1h, 1d, 1w, 1m, 1y",
-        default="60min",
+        default="10min",
         required=False,
     )
 
@@ -107,6 +107,7 @@ def main():
         type=str,
         metavar='',
         help="Bounding box in format min_lon,min_lat,max_lon,max_lat",
+        default="-81.400000,-35.000000,-30.000000,12.600000", # ATLAS
         default="-40.48,-9.48,-34.6,-5.52",  # Paraiba
         # default="-50.899658,-2.040279,-43.549805,2.284551",  # Belém
         required=False,
