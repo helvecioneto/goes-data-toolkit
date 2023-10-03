@@ -1,4 +1,4 @@
-# goes-data-toolkig
+# goes-data-toolkit
 GOES Data Toolkit
 
 ## Download package
